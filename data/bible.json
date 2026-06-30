@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "books": [
+    {
+      "id": "gen",
+      "en": "Genesis",
+      "ua": "Буття",
+      "chapters": 50,
+      "testament": "old"
+    },
+    {
+      "id": "exo",
+      "en": "Exodus",
+      "ua": "Вихід",
+      "chapters": 40,
+      "testament": "old"
+    },
+    {
+      "id": "lev",
+      "en": "Leviticus",
+      "ua": "Левит",
+      "chapters": 27,
+      "testament": "old"
+    },
+    {
+      "id": "num",
+      "en": "Numbers",
+      "ua": "Числа",
+      "chapters": 36,
+      "testament": "old"
+    },
+    {
+      "id": "deu",
+      "en": "Deuteronomy",
+      "ua": "Повторення Закону",
+      "chapters": 34,
+      "testament": "old"
+    },
+    {
+      "id": "jos",
+      "en": "Joshua",
+      "ua": "Ісус Навин",
+      "chapters": 24,
+      "testament": "old"
+    },
+    {
+      "id": "jdg",
+      "en": "Judges",
+      "ua": "Книга Суддів",
+      "chapters": 21,
+      "testament": "old"
+    },
+    {
+      "id": "rut",
+      "en": "Ruth",
+      "ua": "Рут",
+      "chapters": 4,
+      "testament": "old"
+    },
+    {
+      "id": "1sa",
+      "en": "1 Samuel",
+      "ua": "1 Самуїлова",
+      "chapters": 31,
+      "testament": "old"
+    },
+    {
+      "id": "2sa",
+      "en": "2 Samuel",
+      "ua": "2 Самуїлова",
+      "chapters": 24,
+      "testament": "old"
+    },
+    {
+      "id": "1ki",
+      "en": "1 Kings",
+      "ua": "1 Царів",
+      "chapters": 22,
+      "testament": "old"
+    },
+    {
+      "id": "2ki",
+      "en": "2 Kings",
+      "ua": "2 Царів",
+      "chapters": 25,
+      "testament": "old"
+    },
+    {
+      "id": "1ch",
+      "en": "1 Chronicles",
+      "ua": "1 Хроніки",
+      "chapters": 29,
+      "testament": "old"
+    },
+    {
+      "id": "2ch",
+      "en": "2 Chronicles",
+      "ua": "2 Хроніки",
+      "chapters": 36,
+      "testament": "old"
+    },
+    {
+      "id": "ezr",
+      "en": "Ezra",
+      "ua": "Ездра",
+      "chapters": 10,
+      "testament": "old"
+    },
+    {
+      "id": "neh",
+      "en": "Nehemiah",
+      "ua": "Неемія",
+      "chapters": 13,
+      "testament": "old"
+    },
+    {
+      "id": "est",
+      "en": "Esther",
+      "ua": "Естер",
+      "chapters": 10,
+      "testament": "old"
+    },
+    {
+      "id": "job",
+      "en": "Job",
+      "ua": "Йов",
+      "chapters": 42,
+      "testament": "old"
+    },
+    {
+      "id": "psa",
+      "en": "Psalms",
+      "ua": "Псалми",
+      "chapters": 150,
+      "testament": "old"
+    },
+    {
+      "id": "pro",
+      "en": "Proverbs",
+      "ua": "Приповісті",
+      "chapters": 31,
+      "testament": "old"
+    },
+    {
+      "id": "ecc",
+      "en": "Ecclesiastes",
+      "ua": "Екклезіяст",
+      "chapters": 12,
+      "testament": "old"
+    },
+    {
+      "id": "sng",
+      "en": "Song of Solomon",
+      "ua": "Пісня над піснями",
+      "chapters": 8,
+      "testament": "old"
+    },
+    {
+      "id": "isa",
+      "en": "Isaiah",
+      "ua": "Ісая",
+      "chapters": 66,
+      "testament": "old"
+    },
+    {
+      "id": "jer",
+      "en": "Jeremiah",
+      "ua": "Єремія",
+      "chapters": 52,
+      "testament": "old"
+    },
+    {
+      "id": "lam",
+      "en": "Lamentations",
+      "ua": "Плач Єремії",
+      "chapters": 5,
+      "testament": "old"
+    },
+    {
+      "id": "ezk",
+      "en": "Ezekiel",
+      "ua": "Єзекіїль",
+      "chapters": 48,
+      "testament": "old"
+    },
+    {
+      "id": "dan",
+      "en": "Daniel",
+      "ua": "Даниїл",
+      "chapters": 12,
+      "testament": "old"
+    },
+    {
+      "id": "hos",
+      "en": "Hosea",
+      "ua": "Осія",
+      "chapters": 14,
+      "testament": "old"
+    },
+    {
+      "id": "jol",
+      "en": "Joel",
+      "ua": "Йоїл",
+      "chapters": 3,
+      "testament": "old"
+    },
+    {
+      "id": "amo",
+      "en": "Amos",
+      "ua": "Амос",
+      "chapters": 9,
+      "testament": "old"
+    },
+    {
+      "id": "oba",
+      "en": "Obadiah",
+      "ua": "Овдій",
+      "chapters": 1,
+      "testament": "old"
+    },
+    {
+      "id": "jon",
+      "en": "Jonah",
+      "ua": "Йона",
+      "chapters": 4,
+      "testament": "old"
+    },
+    {
+      "id": "mic",
+      "en": "Micah",
+      "ua": "Михей",
+      "chapters": 7,
+      "testament": "old"
+    },
+    {
+      "id": "nam",
+      "en": "Nahum",
+      "ua": "Наум",
+      "chapters": 3,
+      "testament": "old"
+    },
+    {
+      "id": "hab",
+      "en": "Habakkuk",
+      "ua": "Авакум",
+      "chapters": 3,
+      "testament": "old"
+    },
+    {
+      "id": "zep",
+      "en": "Zephaniah",
+      "ua": "Софонія",
+      "chapters": 3,
+      "testament": "old"
+    },
+    {
+      "id": "hag",
+      "en": "Haggai",
+      "ua": "Огій",
+      "chapters": 2,
+      "testament": "old"
+    },
+    {
+      "id": "zec",
+      "en": "Zechariah",
+      "ua": "Захарій",
+      "chapters": 14,
+      "testament": "old"
+    },
+    {
+      "id": "mal",
+      "en": "Malachi",
+      "ua": "Малахія",
+      "chapters": 4,
+      "testament": "old"
+    },
+    {
+      "id": "mat",
+      "en": "Matthew",
+      "ua": "Матвія",
+      "chapters": 28,
+      "testament": "new"
+    },
+    {
+      "id": "mrk",
+      "en": "Mark",
+      "ua": "Марка",
+      "chapters": 16,
+      "testament": "new"
+    },
+    {
+      "id": "luk",
+      "en": "Luke",
+      "ua": "Луки",
+      "chapters": 24,
+      "testament": "new"
+    },
+    {
+      "id": "jhn",
+      "en": "John",
+      "ua": "Івана",
+      "chapters": 21,
+      "testament": "new"
+    },
+    {
+      "id": "act",
+      "en": "Acts",
+      "ua": "Дії",
+      "chapters": 28,
+      "testament": "new"
+    },
+    {
+      "id": "rom",
+      "en": "Romans",
+      "ua": "Римлян",
+      "chapters": 16,
+      "testament": "new"
+    },
+    {
+      "id": "1co",
+      "en": "1 Corinthians",
+      "ua": "1 Коринтян",
+      "chapters": 16,
+      "testament": "new"
+    },
+    {
+      "id": "2co",
+      "en": "2 Corinthians",
+      "ua": "2 Коринтян",
+      "chapters": 13,
+      "testament": "new"
+    },
+    {
+      "id": "gal",
+      "en": "Galatians",
+      "ua": "Галатів",
+      "chapters": 6,
+      "testament": "new"
+    },
+    {
+      "id": "eph",
+      "en": "Ephesians",
+      "ua": "Ефесян",
+      "chapters": 6,
+      "testament": "new"
+    },
+    {
+      "id": "php",
+      "en": "Philippians",
+      "ua": "Филип'ян",
+      "chapters": 4,
+      "testament": "new"
+    },
+    {
+      "id": "col",
+      "en": "Colossians",
+      "ua": "Колосян",
+      "chapters": 4,
+      "testament": "new"
+    },
+    {
+      "id": "1th",
+      "en": "1 Thessalonians",
+      "ua": "1 Солунян",
+      "chapters": 5,
+      "testament": "new"
+    },
+    {
+      "id": "2th",
+      "en": "2 Thessalonians",
+      "ua": "2 Солунян",
+      "chapters": 3,
+      "testament": "new"
+    },
+    {
+      "id": "1ti",
+      "en": "1 Timothy",
+      "ua": "1 Тимофія",
+      "chapters": 6,
+      "testament": "new"
+    },
+    {
+      "id": "2ti",
+      "en": "2 Timothy",
+      "ua": "2 Тимофія",
+      "chapters": 4,
+      "testament": "new"
+    },
+    {
+      "id": "tit",
+      "en": "Titus",
+      "ua": "Тита",
+      "chapters": 3,
+      "testament": "new"
+    },
+    {
+      "id": "phm",
+      "en": "Philemon",
+      "ua": "Филимона",
+      "chapters": 1,
+      "testament": "new"
+    },
+    {
+      "id": "heb",
+      "en": "Hebrews",
+      "ua": "Євреїв",
+      "chapters": 13,
+      "testament": "new"
+    },
+    {
+      "id": "jas",
+      "en": "James",
+      "ua": "Якова",
+      "chapters": 5,
+      "testament": "new"
+    },
+    {
+      "id": "1pe",
+      "en": "1 Peter",
+      "ua": "1 Петра",
+      "chapters": 5,
+      "testament": "new"
+    },
+    {
+      "id": "2pe",
+      "en": "2 Peter",
+      "ua": "2 Петра",
+      "chapters": 3,
+      "testament": "new"
+    },
+    {
+      "id": "1jn",
+      "en": "1 John",
+      "ua": "1 Івана",
+      "chapters": 5,
+      "testament": "new"
+    },
+    {
+      "id": "2jn",
+      "en": "2 John",
+      "ua": "2 Івана",
+      "chapters": 1,
+      "testament": "new"
+    },
+    {
+      "id": "3jn",
+      "en": "3 John",
+      "ua": "3 Івана",
+      "chapters": 1,
+      "testament": "new"
+    },
+    {
+      "id": "jud",
+      "en": "Jude",
+      "ua": "Юди",
+      "chapters": 1,
+      "testament": "new"
+    },
+    {
+      "id": "rev",
+      "en": "Revelation",
+      "ua": "Об'явлення",
+      "chapters": 22,
+      "testament": "new"
+    }
+  ]
+}

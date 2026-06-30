@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "p_sample_23",
+      "number": 23,
+      "title": "Господь — мій Пастир",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Господь — то мій Пастир,\nтому в недостатку не буду.",
+          "translation": "The Lord is my shepherd,\nI shall not want."
+        },
+        {
+          "type": "verse",
+          "text": "На пасовиськах зелених\nоселить мене,\nі на тихую воду\nмене запровадить.",
+          "translation": "He makes me lie down in green pastures,\nHe leads me beside still waters."
+        }
+      ]
+    },
+    {
+      "id": "p_sample_362",
+      "number": 362,
+      "title": "Дивна благодать",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Дивна благодать спасла\nмене, нещасного,\nя був загублений, та знайдений тепер.",
+          "translation": "Amazing grace, how sweet the sound,\nthat saved a wretch like me."
+        },
+        {
+          "type": "chorus",
+          "text": "Хвала Тобі, мій Боже,\nза дивну благодать.",
+          "translation": "Praise to You, my God,\nfor amazing grace."
+        }
+      ]
+    }
+  ]
+}

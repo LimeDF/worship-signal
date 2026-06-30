@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "s_sample_1",
+      "number": 1,
+      "title": "Велич Твоя",
+      "show_translation": false,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "О Господь, Бог мій,\nколи дивлюсь на небо,\nна зорі, що Ти створив рукою.",
+          "translation": ""
+        },
+        {
+          "type": "chorus",
+          "text": "Тоді співає дух мій,\nГосподь Тобі:\nВелика Ти, велика Ти!",
+          "translation": ""
+        },
+        {
+          "type": "bridge",
+          "text": "Свят, свят, свят\nГосподь Саваоф.",
+          "translation": ""
+        }
+      ]
+    }
+  ]
+}

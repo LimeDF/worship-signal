@@ -1,0 +1,192 @@
+/* ============================================================
+   theme.css — палитра, базовые стили, общие компоненты
+   Меняй только этот файл чтобы поменять весь внешний вид.
+   ============================================================ */
+
+:root{
+  /* Палитра (60/30/10) */
+  --cafe:   #4C3D19;  /* Café Noir — системные экраны (PIN) */
+  --kombu:  #354024;  /* Kombu Green — основной фон (60%) */
+  --bone:   #E5D7C4;  /* Bone — текст (30%) */
+  --moss:   #889063;  /* Moss Green — основной акцент */
+  --tan:    #CFBB99;  /* Tan — точечный акцент / текущий элемент */
+  --black:  #000000;  /* только проекционный экран */
+
+  /* Производные */
+  --kombu-2: #404d2c;  /* поверхности чуть светлее фона */
+  --kombu-3: #4a5833;  /* активные/выделенные строки */
+  --line:    #5a6840;  /* границы */
+  --danger:  #b4452f;  /* отказ/удаление (приглушённый) */
+  --bone-dim: rgba(229,215,196,0.55);
+
+  --radius: 8px;
+  --radius-sm: 6px;
+  --font: Georgia, 'Times New Roman', serif;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; height:100%; }
+body{
+  font-family:var(--font);
+  background:var(--kombu);
+  color:var(--bone);
+  font-size:17px;
+  line-height:1.4;
+  overflow-x:hidden;
+}
+#app{ min-height:100%; display:flex; flex-direction:column; }
+
+/* ---------- Экраны ---------- */
+.screen{ flex:1; display:flex; flex-direction:column; min-height:100vh; }
+.sys-screen{ background:var(--cafe); }      /* PIN и технические */
+.app-screen{ background:var(--kombu); }
+.pad{ padding:18px; }
+.col{ display:flex; flex-direction:column; }
+.grow{ flex:1; }
+.center{ align-items:center; justify-content:center; }
+.scroll{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+/* ---------- Шапка ---------- */
+.topbar{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; border-bottom:1px solid var(--line);
+}
+.topbar .title{ font-size:19px; font-weight:bold; flex:1; }
+.topbar .sub{ font-size:13px; color:var(--bone-dim); }
+
+/* ---------- Кнопки ---------- */
+button{ font-family:var(--font); cursor:pointer; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  background:var(--moss); color:#1c2114; border:none;
+  border-radius:var(--radius); padding:13px 16px; font-size:17px;
+  width:100%; text-align:center;
+}
+.btn:active{ filter:brightness(0.92); }
+.btn-ghost{ background:transparent; color:var(--bone); border:1px solid var(--line); }
+.btn-tan{ background:var(--tan); color:#2a2113; }
+.btn-danger{ background:var(--danger); color:#f3e6e0; }
+.btn:disabled{ opacity:0.4; pointer-events:none; }
+.btn-row{ display:flex; gap:10px; }
+.btn-row > .btn{ flex:1; }
+
+/* кнопка-иконка (юникод-символ) */
+.icon-btn{
+  background:transparent; color:var(--bone); border:1px solid var(--line);
+  border-radius:var(--radius-sm); width:42px; height:42px;
+  font-size:20px; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.icon-btn.bare{ border:none; }
+.icon-btn:active{ background:var(--kombu-2); }
+
+/* ---------- Поля ввода ---------- */
+.input{
+  width:100%; font-family:var(--font); font-size:17px;
+  background:transparent; color:var(--bone);
+  border:none; border-bottom:2px solid var(--line);
+  padding:11px 4px; outline:none;
+}
+.input:focus{ border-bottom-color:var(--moss); }
+.input::placeholder{ color:var(--bone-dim); }
+textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); resize:vertical; min-height:90px; }
+.field-label{ font-size:13px; color:var(--bone-dim); margin:14px 0 4px; }
+
+/* системное поле пароля (на café-фоне) */
+.sys-input{
+  width:100%; max-width:320px; font-family:var(--font); font-size:20px; text-align:center;
+  background:#3a2f14; color:var(--bone);
+  border:1px solid #5e4d24; border-radius:var(--radius);
+  padding:15px; outline:none; letter-spacing:2px;
+}
+.sys-input.shake-red{ animation:flashred 0.4s; }
+@keyframes flashred{ 0%,100%{ border-color:#5e4d24; background:#3a2f14; } 50%{ border-color:#b4452f; background:#4a2018; } }
+.sys-input.err{ border-color:var(--danger)!important; background:#4a2018!important; }
+
+/* ---------- Карточки / строки списка ---------- */
+.card{
+  background:var(--kombu-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:13px 14px; margin-bottom:10px;
+}
+.row{
+  display:flex; align-items:center; gap:12px;
+  background:var(--kombu-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:12px 14px; margin-bottom:9px;
+}
+.row:active{ background:var(--kombu-3); }
+.row .num{ font-weight:bold; color:var(--tan); min-width:46px; }
+.row .main{ flex:1; min-width:0; }
+.row .ttl{ font-weight:bold; }
+.row .prev{ font-size:13px; color:var(--bone-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.row.active{ border-color:var(--tan); background:var(--kombu-3); }
+
+/* ---------- Вкладки ---------- */
+.tabs{ display:flex; gap:8px; padding:12px 14px 0; }
+.tab{
+  flex:1; text-align:center; padding:10px; border-radius:var(--radius-sm);
+  background:transparent; color:var(--bone-dim); border:1px solid var(--line);
+}
+.tab.on{ background:var(--moss); color:#1c2114; border-color:var(--moss); font-weight:bold; }
+
+/* ---------- Сетка квадрантов (Сцена) ---------- */
+.quad{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; flex:1; }
+.quad button{
+  border:none; border-radius:var(--radius); font-size:22px; color:#1c2114;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+  min-height:120px;
+}
+.quad .q-repeat{ background:var(--tan); }
+.quad .q-next{ background:var(--moss); }
+.quad .q-prev{ background:#6f7850; color:var(--bone); }
+.quad .q-exit{ background:var(--cafe); color:var(--bone); }
+.quad small{ font-size:13px; opacity:0.8; }
+
+/* ---------- Тосты ---------- */
+#toasts{ position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:9999; width:92%; max-width:440px; }
+.toast{
+  background:var(--kombu-3); color:var(--bone); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4); animation:tin 0.2s;
+}
+.toast.error{ background:#4a2018; border-color:var(--danger); }
+@keyframes tin{ from{ opacity:0; transform:translateY(-8px);} to{opacity:1;transform:none;} }
+
+/* ---------- Модалки ---------- */
+.overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:flex; align-items:center; justify-content:center; padding:18px; }
+.modal{ background:var(--kombu); border:1px solid var(--line); border-radius:var(--radius); width:100%; max-width:420px; padding:18px; }
+.modal h3{ margin:0 0 10px; font-size:19px; }
+.modal .modal-body{ margin-bottom:16px; }
+
+/* ---------- Проекционный экран ---------- */
+.proj-screen{ background:var(--black); color:#fff; }
+.proj-wrap{ position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.proj-text{ color:#fff; text-align:center; white-space:pre-wrap; line-height:1.25; padding:4vmin; max-width:100%; max-height:100%; }
+.proj-exit{ position:fixed; top:8px; right:8px; z-index:10; width:34px; height:34px; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); border-radius:6px; font-size:18px; }
+.proj-iframe{ border:none; width:100%; height:100%; }
+
+/* ---------- Чат ---------- */
+.chat-list{ flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+.chat-msg{ max-width:85%; padding:9px 12px; border-radius:var(--radius); background:var(--kombu-2); border:1px solid var(--line); }
+.chat-msg.mine{ align-self:flex-end; background:var(--moss); color:#1c2114; }
+.chat-from{ font-size:12px; color:var(--bone-dim); margin-bottom:2px; }
+.chat-msg.mine .chat-from{ color:#2a3018; }
+.chat-bar{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); }
+.chat-bar .input{ border:1px solid var(--line); border-radius:var(--radius); padding:10px; }
+
+/* ---------- Лента активности (оператор) ---------- */
+.activity{ display:flex; flex-direction:column; gap:8px; padding:12px 14px; }
+.act-item{ border-left:3px solid var(--moss); padding:8px 10px; background:var(--kombu-2); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+.act-item.bible{ border-left-color:var(--tan); }
+.act-item.signal{ border-left-color:var(--cafe); }
+.act-meta{ font-size:12px; color:var(--bone-dim); }
+.section-h{ font-size:13px; color:var(--bone-dim); text-transform:uppercase; letter-spacing:1px; padding:14px 14px 4px; }
+
+/* ---------- Прочее ---------- */
+.muted{ color:var(--bone-dim); }
+.empty{ text-align:center; color:var(--bone-dim); padding:40px 20px; }
+.spacer{ height:10px; }
+.block-tag{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; margin-bottom:6px; }
+.tag-verse{ background:#3f5a3a; color:var(--bone); }
+.tag-chorus{ background:#2f4a6a; color:#dce8ff; }
+.tag-bridge{ background:var(--cafe); color:var(--bone); }
+.fab{ position:fixed; right:16px; bottom:16px; width:54px; height:54px; border-radius:14px; background:var(--moss); color:#1c2114; border:none; font-size:26px; box-shadow:0 4px 14px rgba(0,0,0,0.4); z-index:500; }
+.banner{ background:var(--tan); color:#2a2113; text-align:center; padding:8px; font-size:14px; }
