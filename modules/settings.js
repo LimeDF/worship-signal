@@ -44,11 +44,11 @@
         cfg ? ('Репозиторий: ' + cfg.owner + '/' + cfg.repo) : 'Не на GitHub Pages — запись недоступна'));
     }
 
-    // Lime-админка (заглушка под будущий модуль)
+    // Lime-админка
     if(WS.Auth.canAdmin()){
       body.appendChild(WS.UI.el('div',{class:'field-label'},'Администрирование (только Lime)'));
       body.appendChild(WS.UI.el('button',{class:'btn btn-tan', onClick:()=>{
-        WS.UI.toast('Модуль админки появится позже');
+        WS.App.show('admin');
       }},'Устройства и уровни'));
       body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'10px'}, onClick:()=>{
         WS.UI.toast('Google Drive и бэкапы — позже');
