@@ -1,23 +1,24 @@
 /* ============================================================
-   chair.js — роль Кафедра. Подменю: Медиа · Текст · Чат · Библия.
-     Текст  — список заготовок (texts.json), тап → на проектор.
-     Библия — книга→глава→стих, EN/UA, выбор стиха → оператору в ленту
-              (на проектор НЕ идёт), отправляется сразу на двух языках.
-     Медиа  — список media.json, тап → embed на проекторе (Google Drive preview).
-     Чат    — общий чат с оператором.
+   chair.js — роль Кафедра. Подменю: Медиа · Текст · Объявления · Чат · Библия.
+     Текст       — заготовки (texts.json): тап → проектор; +редактор (добавить/изменить/удалить).
+     Объявления  — временные (announcements.json), живут 2 дня, авто-очистка; редактор есть.
+     Медиа       — media.json (ссылки Google Drive) → embed на проектор.
+     Библия      — книга→глава→стих, EN/UA; выбор стиха → оператору в ленту (на двух языках).
+     Чат         — общий чат.
+   Данные грузятся ОДИН раз при входе в раздел (await), без фоновой перерисовки.
    ============================================================ */
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
 
-  let bibleLang = WS.ls.get('bible_lang','ua');  // 'ua' | 'en'
+  let bibleLang = WS.ls.get('bible_lang','ua');
 
   WS.App.screens.chair = function(root, params){
-    const view = params.view || 'menu';
+    const view = (params && params.view) || 'menu';
     const screen = WS.UI.el('div',{class:'screen app-screen col'});
 
     function header(title, back){
       return WS.UI.el('div',{class:'topbar'},
-        WS.UI.el('button',{class:'icon-btn bare', onClick: back },'←'),
+        WS.UI.el('button',{class:'icon-btn bare', onClick:back},'←'),
         WS.UI.el('div',{class:'title'}, title)
       );
     }
@@ -25,7 +26,7 @@
     if(view === 'menu'){
       screen.appendChild(header('Кафедра', ()=>WS.App.show('role')));
       const body = WS.UI.el('div',{class:'pad col'});
-      [['media','Медиа'],['text','Текст'],['chat','Чат'],['bible','Библия']].forEach(([v,label])=>{
+      [['media','Медиа'],['text','Текст'],['announce','Объявления'],['chat','Чат'],['bible','Библия']].forEach(([v,label])=>{
         body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px', padding:'18px', fontSize:'18px'}, onClick:()=>{
           if(v==='chat') WS.App.show('chat', { back:'chair' });
           else WS.App.show('chair', { view:v });
@@ -35,129 +36,182 @@
       root.appendChild(screen); return;
     }
 
-    if(view === 'text'){
-      screen.appendChild(header('Текст', ()=>WS.App.show('chair')));
-      const wrap = WS.UI.el('div',{class:'scroll grow pad'});
-      screen.appendChild(wrap); root.appendChild(screen);
-      renderTexts(wrap); return;
-    }
+    const wrap = WS.UI.el('div',{class:'scroll grow pad'});
+    const titles = { text:'Текст', announce:'Объявления', media:'Медиа', bible:'Библия' };
+    screen.appendChild(header(titles[view] || 'Кафедра', ()=>WS.App.show('chair')));
+    screen.appendChild(wrap);
+    root.appendChild(screen);
 
-    if(view === 'media'){
-      screen.appendChild(header('Медиа', ()=>WS.App.show('chair')));
-      const wrap = WS.UI.el('div',{class:'scroll grow pad'});
-      screen.appendChild(wrap); root.appendChild(screen);
-      renderMedia(wrap); return;
-    }
+    if(view === 'text')     loadThen('texts',  ()=>renderItemList(wrap, 'texts'));
+    if(view === 'announce') loadThen('announcements', ()=>renderItemList(wrap, 'announcements'));
+    if(view === 'media')    loadThen('media',  ()=>renderMedia(wrap));
+    if(view === 'bible')    loadThen('bible',  ()=>renderBible(wrap));
 
-    if(view === 'bible'){
-      screen.appendChild(header('Библия', ()=>WS.App.show('chair')));
-      const wrap = WS.UI.el('div',{class:'scroll grow pad'});
-      screen.appendChild(wrap); root.appendChild(screen);
-      renderBible(wrap); return;
+    function loadThen(coll, draw){
+      WS.UI.clear(wrap);
+      wrap.appendChild(WS.UI.el('div',{class:'empty'},'Загрузка…'));
+      WS.Data.load(coll).then(()=>{ if(WS.state.screen==='chair'){ WS.UI.clear(wrap); draw(); } })
+        .catch(()=>{ if(WS.state.screen==='chair'){ WS.UI.clear(wrap); draw(); } });
     }
   };
 
-  // ---------- ТЕКСТ ----------
-  function renderTexts(wrap){
+  // ---------- ТЕКСТЫ / ОБЪЯВЛЕНИЯ (общий список + редактор) ----------
+  // coll: 'texts' (постоянные) | 'announcements' (временные, 2 дня)
+  function renderItemList(wrap, coll){
     WS.UI.clear(wrap);
-    const items = WS.Data.items('texts');
-    if(!items.length) wrap.appendChild(WS.UI.el('div',{class:'empty'},'Заготовок нет. Загружаю…'));
+    const isAnn = coll === 'announcements';
+
+    if(WS.Auth.canAdd()){
+      wrap.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'14px'}, onClick:()=>openItemEditor(wrap, coll, null)},
+        isAnn ? '+ Добавить объявление' : '+ Добавить текст'));
+    }
+    if(isAnn){
+      wrap.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'10px'}},
+        'Объявления автоматически исчезают через 2 дня.'));
+    }
+
+    const items = activeItems(coll);
+    if(!items.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'}, isAnn ? 'Объявлений нет' : 'Текстов нет')); return; }
+
     items.forEach(it => {
-      wrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>{
-        const payload = { t:'text', body: it.text || it.body || '' };
-        WS.Sync.send(payload); WS.state.lastDisplay = payload;
-        WS.UI.toast('Отправлено на проектор');
-      }},
-        WS.UI.el('div',{class:'main'},
+      const row = WS.UI.el('div',{class:'row'},
+        WS.UI.el('div',{class:'main', style:{cursor:'pointer'}, onClick:()=>{
+          const payload = { t:'text', body: it.text || it.body || '' };
+          WS.Sync.send(payload); WS.state.lastDisplay = payload;
+          WS.UI.toast('Отправлено на проектор');
+        }},
           WS.UI.el('div',{class:'ttl'}, it.title || WS.UI.preview(it.text||it.body, 40)),
           WS.UI.el('div',{class:'prev'}, WS.UI.preview(it.text||it.body, 60))
         )
-      ));
+      );
+      if(WS.Auth.canAdd()){
+        row.appendChild(WS.UI.el('button',{class:'icon-btn', title:'Изменить', onClick:()=>openItemEditor(wrap, coll, it)},'✎'));
+      }
+      wrap.appendChild(row);
     });
-    WS.Data.load('texts').then(()=>{ if(WS.state.screen==='chair') renderTexts(wrap); }).catch(()=>{});
+  }
+
+  function openItemEditor(wrap, coll, existing){
+    const isNew = !existing, isAnn = coll === 'announcements';
+    if(isNew && !WS.Auth.canAdd()){ WS.UI.denied(); return; }
+    if(!isNew && !WS.Auth.canEdit()){ WS.UI.denied(); return; }
+
+    const model = existing ? JSON.parse(JSON.stringify(existing)) : { id:WS.Data.newId(), title:'', text:'', created:Date.now() };
+
+    WS.UI.clear(wrap);
+    wrap.appendChild(WS.UI.el('div',{style:{fontSize:'18px', fontWeight:'bold', marginBottom:'12px'}},
+      isNew ? (isAnn ? 'Новое объявление' : 'Новый текст') : 'Редактирование'));
+
+    wrap.appendChild(WS.UI.el('div',{class:'field-label'},'Заголовок (необязательно)'));
+    const titleInp = WS.UI.el('input',{class:'input', value:model.title || ''});
+    wrap.appendChild(titleInp);
+
+    wrap.appendChild(WS.UI.el('div',{class:'field-label'},'Текст'));
+    const textArea = WS.UI.el('textarea',{class:'input', style:{minHeight:'140px'}}); textArea.value = model.text || model.body || '';
+    wrap.appendChild(textArea);
+
+    wrap.appendChild(WS.UI.el('div',{class:'spacer'}));
+    wrap.appendChild(WS.UI.el('div',{class:'btn-row'},
+      WS.UI.el('button',{class:'btn', onClick:save},'Сохранить'),
+      WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>renderItemList(wrap, coll)},'Отмена')
+    ));
+    if(!isNew && WS.Auth.canEdit())
+      wrap.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove},'Удалить'));
+
+    async function save(){
+      model.title = titleInp.value.trim();
+      model.text = textArea.value.trim();
+      if('body' in model) delete model.body;
+      if(!model.text){ WS.UI.toast('Введите текст','error'); return; }
+      if(isAnn && !model.created) model.created = Date.now();
+
+      let items = activeItems(coll).slice();   // берём уже отфильтрованные (протухшие отсеяны)
+      const idx = items.findIndex(x => x.id === model.id);
+      if(idx >= 0) items[idx] = model; else items.push(model);
+
+      WS.UI.toast('Сохранение…');
+      try { await WS.Data.save(coll, items, (idx>=0?'Edit ':'Add ') + (model.title || 'текст')); WS.UI.toast('Сохранено ✓'); renderItemList(wrap, coll); }
+      catch(e){ WS.UI.toast('Ошибка: ' + (e.message || ''), 'error'); }
+    }
+    async function remove(){
+      WS.UI.confirm('Удалить?', async ()=>{
+        const items = activeItems(coll).filter(x => x.id !== model.id);
+        try { await WS.Data.save(coll, items, 'Delete'); WS.UI.toast('Удалено'); renderItemList(wrap, coll); }
+        catch(e){ WS.UI.toast('Ошибка: ' + (e.message || ''), 'error'); }
+      },'Удалить');
+    }
+  }
+
+  // вернуть «живые» элементы коллекции (для объявлений — отсеять старше 2 дней)
+  function activeItems(coll){
+    const items = WS.Data.items(coll) || [];
+    if(coll !== 'announcements') return items;
+    const cutoff = Date.now() - WS.config.ANNOUNCE_TTL_MS;
+    return items.filter(it => !it.created || it.created >= cutoff);
   }
 
   // ---------- МЕДИА ----------
   function renderMedia(wrap){
     WS.UI.clear(wrap);
-    const items = WS.Data.items('media');
     wrap.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'12px'}},
       'Файлы добавляются в media.json (ссылки Google Drive). Тап — показать на проекторе.'));
-    if(!items.length) wrap.appendChild(WS.UI.el('div',{class:'empty'},'Медиа нет'));
+    const items = WS.Data.items('media');
+    if(!items.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'},'Медиа нет')); return; }
     items.forEach(it => {
       wrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>{
-        const payload = { t:'media', mediaType: it.type||'video', driveId: it.drive_id||'', title: it.title||'' };
+        const payload = { t:'media', mediaType:it.type||'video', driveId:it.drive_id||'', title:it.title||'' };
         WS.Sync.send(payload); WS.state.lastDisplay = payload;
         WS.UI.toast('Запущено на проекторе');
       }},
-        WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[it.type]||'•')),
-        WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, it.title||'(без названия)'),
-          WS.UI.el('div',{class:'prev'}, it.type||''))
+        WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[it.type] || '•')),
+        WS.UI.el('div',{class:'main'},
+          WS.UI.el('div',{class:'ttl'}, it.title || '(без названия)'),
+          WS.UI.el('div',{class:'prev'}, it.type || ''))
       ));
     });
-    WS.Data.load('media').then(()=>{ if(WS.state.screen==='chair') renderMedia(wrap); }).catch(()=>{});
   }
 
   // ---------- БИБЛИЯ ----------
   function renderBible(wrap){
     WS.UI.clear(wrap);
-
-    // переключатель языка
-    const langRow = WS.UI.el('div',{class:'tabs', style:{padding:'0 0 12px'}},
+    wrap.appendChild(WS.UI.el('div',{class:'tabs', style:{padding:'0 0 12px'}},
       WS.UI.el('button',{class:'tab'+(bibleLang==='ua'?' on':''), onClick:()=>{ bibleLang='ua'; WS.ls.set('bible_lang','ua'); renderBible(wrap); }},'Українська'),
       WS.UI.el('button',{class:'tab'+(bibleLang==='en'?' on':''), onClick:()=>{ bibleLang='en'; WS.ls.set('bible_lang','en'); renderBible(wrap); }},'English')
-    );
-    wrap.appendChild(langRow);
+    ));
 
     const books = WS.Data.items('bible');
-    if(!books.length){
-      wrap.appendChild(WS.UI.el('div',{class:'empty'},'Загружаю книги…'));
-      WS.Data.load('bible').then(()=>{ if(WS.state.screen==='chair') renderBible(wrap); }).catch(()=>{});
-      return;
-    }
+    if(!books.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'},'Книги не загружены')); return; }
 
-    const listWrap = WS.UI.el('div',null);
+    const listWrap = WS.UI.el('div', null);
     wrap.appendChild(listWrap);
-
-    function bookName(b){ return bibleLang==='en' ? b.en : b.ua; }
+    const bookName = b => bibleLang==='en' ? b.en : b.ua;
 
     function showBooks(){
       WS.UI.clear(listWrap);
-      books.forEach(b => {
-        listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>showChapters(b)},
-          WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, bookName(b)))
-        ));
-      });
+      books.forEach(b => listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>showChapters(b)},
+        WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, bookName(b))))));
     }
     function showChapters(b){
       WS.UI.clear(listWrap);
       listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:showBooks},'← Книги'));
       listWrap.appendChild(WS.UI.el('div',{style:{fontWeight:'bold', marginBottom:'10px'}}, bookName(b)));
       const grid = WS.UI.el('div',{style:{display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'8px'}});
-      for(let c=1; c<=b.chapters; c++){
-        grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>showVerses(b,c)}, String(c)));
-      }
+      for(let c=1;c<=b.chapters;c++) grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>showVerses(b,c)}, String(c)));
       listWrap.appendChild(grid);
     }
     function showVerses(b, c){
       WS.UI.clear(listWrap);
       listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:()=>showChapters(b)},'← Главы'));
       listWrap.appendChild(WS.UI.el('div',{style:{fontWeight:'bold', marginBottom:'10px'}}, bookName(b) + ' ' + c));
-      // число стихов заранее неизвестно — даём сетку 1..60 (стихи из json подключим позже)
       const grid = WS.UI.el('div',{style:{display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:'8px'}});
-      for(let v=1; v<=60; v++){
-        grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>sendVerse(b,c,v)}, String(v)));
-      }
+      for(let v=1;v<=60;v++) grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>sendVerse(b,c,v)}, String(v)));
       listWrap.appendChild(grid);
     }
     function sendVerse(b, c, v){
-      // отправляем оператору В ЛЕНТУ (не на проектор), сразу на двух языках
-      const refUa = b.ua + ' ' + c + ':' + v;
-      const refEn = b.en + ' ' + c + ':' + v;
+      const refUa = b.ua + ' ' + c + ':' + v, refEn = b.en + ' ' + c + ':' + v;
       WS.Sync.send({ t:'activity', kind:'bible', label: refUa + '  /  ' + refEn });
       WS.UI.toast('Отправлено оператору: ' + (bibleLang==='en'?refEn:refUa));
     }
-
     showBooks();
   }
 })();

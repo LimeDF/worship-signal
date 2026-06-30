@@ -53,7 +53,7 @@
     if(WS.Presence) WS.Presence.start();   // присутствие устройств (для Lime-админки)
 
     // предзагрузка коллекций в фоне (UI не блокируем)
-    ['songs','psalms','texts','bible','announcements','media'].forEach(c => {
+    ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => {
       WS.Data.load(c).catch(()=>{});
     });
 

@@ -25,9 +25,10 @@
 
     const roles = [
       { id:'operator', label:'Оператор',      desc:'Приём сообщений и трансляция' },
-      { id:'chair',    label:'Кафедра',        desc:'Медиа · Текст · Чат · Библия' },
+      { id:'chair',    label:'Кафедра',        desc:'Медиа · Текст · Объявления · Библия' },
       { id:'stage',    label:'Сцена',          desc:'Управление · повтор/далее', needStage:true },
       { id:'hymns',    label:'Псалмы / Песни', desc:'Списки и редактор',          needStage:true },
+      { id:'programs', label:'Программы',       desc:'Сценарии служения' },
     ];
 
     const btns = [];
