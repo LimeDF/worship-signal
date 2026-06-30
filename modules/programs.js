@@ -114,6 +114,8 @@
       const coll = COLL[el.type];
       const item = (WS.Data.items(coll) || []).find(x => x.id === el.ref_id);
       if(!item){ WS.UI.toast('Элемент не найден (удалён?)','error'); return; }
+      // сообщить оператору о переходе по программе
+      WS.Sync.send({ t:'activity', kind:'program', label:'Программа → ' + (el.type==='psalm'?'Псалом':'Песня') + ' #' + (item.number||'') + ' ' + (item.title||'') });
       // показываем блоки прямо здесь, кнопка назад возвращает к программе
       WS.Hymns.renderBlocks(content, item, { onBack: ()=>renderDetail(content) });
       return;
@@ -125,7 +127,7 @@
       const body = item ? (item.text || item.body || '') : (el.text || '');
       if(!body){ WS.UI.toast('Текст не найден','error'); return; }
       const payload = { t:'text', body };
-      WS.Sync.send(payload); WS.state.lastDisplay = payload;
+      WS.Sync.send(payload); WS.Projector.set(payload);
       WS.UI.toast('Отправлено на проектор');
     }
   }

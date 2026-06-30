@@ -16,7 +16,7 @@
 
     function sig(action){
       WS.Sync.send({ t:'signal', action });
-      if(action === 'exit'){ WS.Sync.send({ t:'clear' }); WS.state.lastDisplay=null; }
+      if(action === 'exit'){ WS.Sync.send({ t:'clear' }); WS.Projector.set({ t:'clear' }); }
       WS.UI.toast('Сигнал: ' + ({repeat:'Повтор', next:'Далее', prev:'Назад', exit:'Стоп'}[action]));
     }
 

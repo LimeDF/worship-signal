@@ -30,9 +30,9 @@
       WS.Auth.setDeviceName(nameInp.value); WS.UI.toast('Имя сохранено');
     }},'Сохранить имя'));
 
-    // GitHub-токен (для записи в базу) — показываем для stage/lime
-    if(WS.Auth.canEdit() || WS.Data.getToken()){
-      body.appendChild(WS.UI.el('div',{class:'field-label'},'GitHub-токен (для сохранения песен/псалмов)'));
+    // GitHub-токен и репозиторий — ТОЛЬКО Lime (технические/бэкграунд настройки)
+    if(WS.Auth.canAdmin()){
+      body.appendChild(WS.UI.el('div',{class:'field-label'},'GitHub-токен (для сохранения данных в репозиторий)'));
       const tok = WS.UI.el('input',{class:'input', type:'password', placeholder: WS.Data.getToken() ? '•••••• (сохранён)' : 'ghp_…'});
       body.appendChild(tok);
       body.appendChild(WS.UI.el('div',{class:'spacer'}));

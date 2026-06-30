@@ -44,7 +44,7 @@
     });
 
     container.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'8px'}, onClick:()=>{
-      WS.Sync.send({ t:'clear' }); WS.state.lastDisplay = null; sentKey = null;
+      WS.Sync.send({ t:'clear' }); WS.Projector.set({ t:'clear' }); sentKey = null;
       cards.forEach(c => c.style.borderColor = '');
       WS.UI.toast('Проектор очищен');
     }},'Очистить проектор'));
@@ -57,7 +57,7 @@
         showTranslation: !!(item.show_translation && b.translation)
       };
       WS.Sync.send(payload);
-      WS.state.lastDisplay = payload;
+      WS.Projector.set(payload);
       sentKey = key;
       cards.forEach(c => c.style.borderColor = '');
       cardEl.style.borderColor = 'var(--tan)';

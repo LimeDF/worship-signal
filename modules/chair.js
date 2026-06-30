@@ -77,7 +77,7 @@
       const row = WS.UI.el('div',{class:'row'},
         WS.UI.el('div',{class:'main', style:{cursor:'pointer'}, onClick:()=>{
           const payload = { t:'text', body: it.text || it.body || '' };
-          WS.Sync.send(payload); WS.state.lastDisplay = payload;
+          WS.Sync.send(payload); WS.Projector.set(payload);
           WS.UI.toast('Отправлено на проектор');
         }},
           WS.UI.el('div',{class:'ttl'}, it.title || WS.UI.preview(it.text||it.body, 40)),
@@ -150,26 +150,104 @@
     return items.filter(it => !it.created || it.created >= cutoff);
   }
 
-  // ---------- МЕДИА ----------
+  // ---------- МЕДИА (Google Drive) ----------
   function renderMedia(wrap){
     WS.UI.clear(wrap);
+
+    if(WS.Auth.canAdd()){
+      wrap.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'12px'}, onClick:()=>openMediaEditor(wrap, null)},'+ Добавить файл с Google Drive'));
+    }
     wrap.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'12px'}},
-      'Файлы добавляются в media.json (ссылки Google Drive). Тап — показать на проекторе.'));
+      'Вставьте ссылку на файл из Google Drive (откройте доступ «всем, у кого есть ссылка»). Тап по файлу — показать на проекторе.'));
+
     const items = WS.Data.items('media');
     if(!items.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'},'Медиа нет')); return; }
+
     items.forEach(it => {
-      wrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>{
-        const payload = { t:'media', mediaType:it.type||'video', driveId:it.drive_id||'', title:it.title||'' };
-        WS.Sync.send(payload); WS.state.lastDisplay = payload;
-        WS.UI.toast('Запущено на проекторе');
-      }},
-        WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[it.type] || '•')),
-        WS.UI.el('div',{class:'main'},
+      const row = WS.UI.el('div',{class:'row'},
+        WS.UI.el('div',{class:'num', style:{cursor:'pointer'}, onClick:()=>sendMedia(it)}, ({video:'▶',image:'▣',presentation:'▤'}[it.type] || '•')),
+        WS.UI.el('div',{class:'main', style:{cursor:'pointer'}, onClick:()=>sendMedia(it)},
           WS.UI.el('div',{class:'ttl'}, it.title || '(без названия)'),
-          WS.UI.el('div',{class:'prev'}, it.type || ''))
-      ));
+          WS.UI.el('div',{class:'prev'}, it.drive_id ? 'Drive · ' + (it.type||'') : 'нет ссылки')
+        )
+      );
+      if(WS.Auth.canAdd()) row.appendChild(WS.UI.el('button',{class:'icon-btn', title:'Изменить', onClick:()=>openMediaEditor(wrap, it)},'✎'));
+      wrap.appendChild(row);
     });
   }
+
+  function sendMedia(it){
+    if(!it.drive_id){ WS.UI.toast('У файла нет ссылки Drive','error'); return; }
+    const payload = { t:'media', mediaType:it.type||'video', driveId:it.drive_id, title:it.title||'' };
+    WS.Sync.send(payload); WS.Projector.set(payload);
+    WS.UI.toast('Запущено на проекторе');
+  }
+
+  // вытащить ID файла из ссылки Google Drive (или принять сам ID)
+  function parseDriveId(s){
+    s = String(s || '').trim();
+    let m = s.match(/\/d\/([-\w]{20,})/) || s.match(/[?&]id=([-\w]{20,})/);
+    if(m) return m[1];
+    if(/^[-\w]{20,}$/.test(s)) return s;
+    return '';
+  }
+
+  function openMediaEditor(wrap, existing){
+    const isNew = !existing;
+    if(isNew && !WS.Auth.canAdd()){ WS.UI.denied(); return; }
+    if(!isNew && !WS.Auth.canEdit()){ WS.UI.denied(); return; }
+
+    const model = existing ? JSON.parse(JSON.stringify(existing)) : { id:WS.Data.newId(), title:'', type:'video', drive_id:'' };
+
+    WS.UI.clear(wrap);
+    wrap.appendChild(WS.UI.el('div',{style:{fontSize:'18px', fontWeight:'bold', marginBottom:'12px'}}, isNew ? 'Новый файл' : 'Изменить файл'));
+
+    wrap.appendChild(WS.UI.el('div',{class:'field-label'},'Название'));
+    const titleInp = WS.UI.el('input',{class:'input', value:model.title||''});
+    wrap.appendChild(titleInp);
+
+    wrap.appendChild(WS.UI.el('div',{class:'field-label'},'Ссылка на файл Google Drive'));
+    const linkInp = WS.UI.el('input',{class:'input', placeholder:'https://drive.google.com/file/d/…/view', value: model.drive_id ? ('https://drive.google.com/file/d/'+model.drive_id+'/view') : ''});
+    wrap.appendChild(linkInp);
+
+    wrap.appendChild(WS.UI.el('div',{class:'field-label'},'Тип'));
+    const typeSel = WS.UI.el('select',{class:'input', style:{borderBottom:'2px solid var(--line)'}},
+      optEl('video','Видео', model.type), optEl('image','Изображение', model.type), optEl('presentation','Презентация / PDF', model.type));
+    wrap.appendChild(typeSel);
+
+    wrap.appendChild(WS.UI.el('div',{class:'spacer'}));
+    wrap.appendChild(WS.UI.el('div',{class:'btn-row'},
+      WS.UI.el('button',{class:'btn', onClick:save},'Сохранить'),
+      WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>renderMedia(wrap)},'Отмена')
+    ));
+    if(!isNew && WS.Auth.canEdit())
+      wrap.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove},'Удалить'));
+
+    async function save(){
+      model.title = titleInp.value.trim();
+      model.type = typeSel.value;
+      const id = parseDriveId(linkInp.value);
+      if(!id){ WS.UI.toast('Не распознал ссылку Drive','error'); return; }
+      model.drive_id = id;
+      if(!model.title) model.title = 'Файл';
+
+      const items = WS.Data.items('media').slice();
+      const idx = items.findIndex(x => x.id === model.id);
+      if(idx >= 0) items[idx] = model; else items.push(model);
+      WS.UI.toast('Сохранение…');
+      try { await WS.Data.save('media', items, (idx>=0?'Edit ':'Add ') + 'media ' + model.title); WS.UI.toast('Сохранено ✓'); renderMedia(wrap); }
+      catch(e){ WS.UI.toast('Ошибка: ' + (e.message || ''), 'error'); }
+    }
+    async function remove(){
+      WS.UI.confirm('Удалить «' + model.title + '»?', async ()=>{
+        const items = WS.Data.items('media').filter(x => x.id !== model.id);
+        try { await WS.Data.save('media', items, 'Delete media'); WS.UI.toast('Удалено'); renderMedia(wrap); }
+        catch(e){ WS.UI.toast('Ошибка: ' + (e.message || ''), 'error'); }
+      },'Удалить');
+    }
+  }
+
+  function optEl(val, label, cur){ const o = document.createElement('option'); o.value = val; o.textContent = label; if(cur === val) o.selected = true; return o; }
 
   // ---------- БИБЛИЯ ----------
   function renderBible(wrap){

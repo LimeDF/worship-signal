@@ -42,14 +42,14 @@
     });
 
     function syncEnabled(){
-      const ok = nameInp.value.trim().length > 0;
+      const ok = (nameInp.value||"").trim().length > 0;
       btns.forEach(b => b.disabled = !ok);
     }
     nameInp.addEventListener('input', () => { WS.Auth.setDeviceName(nameInp.value); syncEnabled(); });
     syncEnabled();
 
     function enter(r){
-      const name = nameInp.value.trim();
+      const name = (nameInp.value||"").trim();
       if(!name){ WS.UI.toast('Сначала введите имя','error'); nameInp.focus(); return; }
       WS.Auth.setDeviceName(name);
 

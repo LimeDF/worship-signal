@@ -1,16 +1,15 @@
 /* ============================================================
-   app.js — загружается ПОСЛЕДНИМ. Старт приложения и маршрутизация.
-     WS.App.boot()          — инициализация, подключение, выбор экрана.
-     WS.App.show(name,p)    — показать экран (модули в WS.App.screens).
-     Глобальный диспетчер сообщений: следит за lastDisplay и чатом,
-     затем вызывает обработчик текущего экрана WS.state.onMessage.
+   app.js — загружается ПОСЛЕДНИМ. Старт и маршрутизация.
+   Глобальный диспетчер сообщений делает ГЛАВНОЕ надёжно:
+     - контент (block/text/media/clear) → WS.Projector (рисует всегда);
+     - события → WS.Log (накопительный лог, виден любому оператору);
+     - чат → WS.Chat; обновление данных → WS.Data.refresh.
+   Только после этого зовётся обработчик текущего экрана (если есть).
    ============================================================ */
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
 
-  // показать экран. Сбрасывает обработчик предыдущего и чистит чат-привязку.
   WS.App.show = function(name, params){
-    // очистка предыдущего экрана
     if(typeof WS.state._cleanup === 'function'){ try { WS.state._cleanup(); } catch(e){} }
     WS.state._cleanup = null;
     WS.state.onMessage = null;
@@ -27,38 +26,50 @@
       console.error('Ошибка экрана', name, e);
       root.appendChild(WS.UI.el('div',{class:'pad'},
         WS.UI.el('div',{style:{color:'var(--danger)'}}, 'Ошибка экрана «'+name+'».'),
-        WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginTop:'8px'}}, String(e.message||e))
+        WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginTop:'8px'}}, String(e.message || e))
       ));
     }
   };
 
+  function blockName(t){ return t==='chorus'?'Припев':t==='bridge'?'Бридж':'Куплет'; }
+  function signalName(a){ return { repeat:'Повтор', next:'Далее', prev:'Назад', exit:'Стоп' }[a] || a; }
+  function prev(s){ return WS.UI.preview(s, 40); }
+
   // глобальный обработчик ВСЕХ входящих сообщений
   function globalHandler(p){
-    // отслеживаем последнее отображаемое (для трансляции при переключении)
-    if(p.t === 'block' || p.t === 'text' || p.t === 'media') WS.state.lastDisplay = p;
-    if(p.t === 'clear') WS.state.lastDisplay = null;
-    // чат кладём в кэш всегда (даже если экран чата закрыт)
+    // ----- ПРОЕКТОР (рисует всегда, независимо от экрана) -----
+    if(p.t === 'block' || p.t === 'text' || p.t === 'media') WS.Projector.set(p);
+    else if(p.t === 'clear') WS.Projector.set({ t:'clear' });
+
+    // ----- ЛОГ (накопительный, общий для операторов) -----
+    if(p.t === 'block')       WS.Log.add({ source:p._name, kind:'block',   label:'#'+(p.number||'')+' '+(p.title||'')+' — '+blockName(p.blockType) });
+    else if(p.t === 'text')   WS.Log.add({ source:p._name, kind:'block',   label:'Текст: '+prev(p.body) });
+    else if(p.t === 'media')  WS.Log.add({ source:p._name, kind:'block',   label:'Медиа: '+(p.title||'') });
+    else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'signal',  label:'Проектор очищен' });
+    else if(p.t === 'signal') WS.Log.add({ source:p._name, kind:'signal',  label:'Сигнал: '+signalName(p.action) });
+    else if(p.t === 'activity' && p.kind === 'bible')   WS.Log.add({ source:p._name, kind:'bible',   label:'Библия: '+p.label });
+    else if(p.t === 'activity' && p.kind === 'program') WS.Log.add({ source:p._name, kind:'program', label:p.label });
+
+    if(p.t === 'log_clear') WS.Log.clear(true);   // очистка лога с другого устройства
+
+    // ----- прочее -----
     if(p.t === 'chat' && WS.Chat) WS.Chat.receive(p);
-    // обновление данных другим устройством — освежим кэш коллекции
     if(p.t === 'data' && p.collection && WS.Data) WS.Data.refresh(p.collection);
-    // обработчик текущего экрана
+
+    // обработчик текущего экрана (например индикатор связи)
     if(typeof WS.state.onMessage === 'function'){ try { WS.state.onMessage(p); } catch(e){ console.error(e); } }
   }
 
   WS.App.boot = function(){
-    WS.Auth.getDeviceId();             // гарантируем UUID
+    WS.Auth.getDeviceId();
 
     WS.Sync.on(globalHandler);
     WS.Sync.connect();
-    if(WS.Presence) WS.Presence.start();   // присутствие устройств (для Lime-админки)
+    if(WS.Presence) WS.Presence.start();
 
-    // предзагрузка коллекций в фоне (UI не блокируем)
-    ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => {
-      WS.Data.load(c).catch(()=>{});
-    });
+    ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
 
-    // маршрут старта
     if(!WS.Auth.getLevel()) WS.App.show('pin');
-    else WS.App.show('role');          // role-экран сам потребует имя, если пусто
+    else WS.App.show('role');
   };
 })();
