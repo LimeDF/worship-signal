@@ -13,7 +13,7 @@
    ============================================================ */
 (function(){
   const S = {};
-  const POLL_MS = 10000;
+  const POLL_MS = 20000;
   let es = null, handlers = [], reconnectTimer = null, pollTimer = null;
   const seen = new Set();
   let lastTime = Math.floor(Date.now() / 1000);
@@ -80,6 +80,7 @@
   function startPoll(){
     if(pollTimer) return;
     pollTimer = setInterval(async function(){
+      if(S.isLive()) return;                 // SSE активен — опрос не нужен (экономим лимит сервера)
       try {
         const res = await fetch(base() + '/json?poll=1&since=' + lastTime, { cache:'no-store' });
         if(!res.ok) return;
@@ -103,11 +104,11 @@
     payload._name = WS.Auth.getDeviceName();
     payload._lvl  = WS.Auth.getLevel();
     const body = JSON.stringify(payload);
-    try { await fetch(base(), { method:'POST', body }); }
-    catch(e){
-      try { await fetch(base(), { method:'POST', body }); }
-      catch(e2){ console.error('send failed', e2); WS.UI && WS.UI.toast(WS.t('no_conn'), 'error'); }
-    }
+    try {
+      const res = await fetch(base(), { method:'POST', body });
+      // 429 = сервер ограничивает частоту; НЕ повторяем (повтор только ухудшает)
+      if(res.status === 429){ console.warn('ntfy rate limit'); }
+    } catch(e){ console.error('send failed', e); }
   };
 
   S.on  = function(h){ handlers.push(h); };

@@ -9,16 +9,18 @@
    ============================================================ */
 (function(){
   const P = {};
-  const HEARTBEAT_MS = 25000;       // как часто слать presence
-  const ONLINE_MS    = 45000;       // онлайн, если presence был < 45с назад
+  const HEARTBEAT_MS = 90000;       // как часто слать presence (реже = меньше нагрузка на сервер)
+  const ONLINE_MS    = 210000;      // онлайн, если presence был < 3.5 мин назад
   const devices = new Map();        // id -> { id, name, level, role, lastSeen }
   let hbTimer = null;
   let onChange = null;
+  let lastBeatAt = 0;
 
   function myId(){ return WS.Auth.getDeviceId(); }
 
   function beat(){
     if(!WS.Auth.getLevel()) return;                 // не вошёл — не светимся
+    lastBeatAt = Date.now();
     WS.Sync.send({ t:'presence', role: WS.state.role || null });
   }
 
@@ -26,7 +28,10 @@
   function handle(p){
     if(p._dev === myId()) return;                   // свои presence/команды игнорируем
     if(p.t === 'presence'){ record(p); }
-    else if(p.t === 'presence_request'){ beat(); }
+    else if(p.t === 'presence_request'){
+      // отвечаем с задержкой и не чаще раза в 20с, чтобы не завалить сервер запросами разом
+      if(Date.now() - lastBeatAt > 20000) setTimeout(beat, Math.floor(Math.random() * 3000));
+    }
     else if(p.t === 'set_level'){ if(p.target === myId() && p._lvl === 'lime') applyLevel(p.level); }
     else if(p.t === 'block'){     if(p.target === myId() && p._lvl === 'lime') applyBlock(); }
   }
