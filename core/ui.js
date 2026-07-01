@@ -39,7 +39,7 @@
     box.appendChild(t);
     setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 2200);
   };
-  U.denied = function(){ U.toast('В доступе отказано', 'error'); };
+  U.denied = function(){ U.toast(WS.t('denied'), 'error'); };
 
   // модалка: U.modal({ title, body:Node|string, buttons:[{label,kind,onClick,close}] })
   U.modal = function(opts){
@@ -68,9 +68,9 @@
   };
 
   U.confirm = function(msg, onYes, yesLabel){
-    U.modal({ title:'Подтвердите', body:msg, buttons:[
-      { label:'Отмена', kind:'ghost' },
-      { label:yesLabel || 'Да', kind:'danger', onClick:onYes }
+    U.modal({ title:WS.t('confirm_title'), body:msg, buttons:[
+      { label:WS.t('cancel'), kind:'ghost' },
+      { label:yesLabel || WS.t('yes'), kind:'danger', onClick:onYes }
     ]});
   };
 

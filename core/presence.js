@@ -40,14 +40,14 @@
     if(['regular','stage','lime'].indexOf(level) < 0) return;
     WS.ls.set('level', level);
     if(level === 'stage' || level === 'lime') WS.ls.set('stage_grace', Date.now());
-    WS.UI.toast('Ваш уровень изменён: ' + levelName(level));
+    WS.UI.toast(WS.t('your_level_changed', levelName(level)));
     if(WS.state.screen) WS.App.show(WS.state.screen);   // обновить права на экране
   }
 
   function applyBlock(){
     WS.Auth.lock();        // кулдаун 3 мин (см. auth.js)
     WS.Auth.logout();
-    WS.UI.toast('Устройство заблокировано администратором', 'error');
+    WS.UI.toast(WS.t('blocked_by_admin'), 'error');
     WS.App.show('pin');
   }
 
@@ -71,7 +71,7 @@
   P.onChange = function(cb){ onChange = cb; };
   P.clearOnChange = function(){ onChange = null; };
 
-  function levelName(l){ return { regular:'Обычный', stage:'Сцена', lime:'Lime' }[l] || '—'; }
+  function levelName(l){ return { regular:WS.t('lvl_regular'), stage:WS.t('lvl_stage'), lime:WS.t('lvl_lime') }[l] || '—'; }
   P.levelName = levelName;
 
   WS.Presence = P;

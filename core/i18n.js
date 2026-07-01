@@ -1,0 +1,171 @@
+/* ============================================================
+   i18n.js — локализация. Два языка: украинский (uk, по умолчанию) и английский (en).
+   WS.t('key', arg0, arg1...) — перевод с подстановкой {0},{1}.
+   Язык хранится в localStorage, меняется в Настройках, применяется ко всем ролям.
+   Загружается сразу после store.js.
+   ============================================================ */
+(function(){
+  const DICT = {
+    uk: {
+      // общие
+      cancel:'Скасувати', save:'Зберегти', saving:'Збереження…', saved:'Збережено ✓',
+      del:'Видалити', deleted:'Видалено', confirm_title:'Підтвердьте', yes:'Так', close:'Закрити',
+      add_btn:'Додати', edit:'Змінити', back:'← Назад', loading:'Завантаження…',
+      error_prefix:'Помилка: ', denied:'Доступ заборонено', no_conn:"Немає зв'язку",
+      untitled:'(без назви)', enter_title:'Введіть назву', empty_generic:'Поки порожньо',
+      // app/role
+      brand:'Worship Signal', your_name:"Ваше ім'я", enter_name:"Введіть ім'я",
+      enter_name_first:"Спочатку введіть ім'я", password_for_role:'Пароль для ролі «{0}»',
+      r_operator:'Оператор', r_operator_d:'Прийом повідомлень і трансляція',
+      r_chair:'Кафедра', r_chair_d:'Медіа · Текст · Оголошення · Біблія',
+      r_stage:'Сцена', r_stage_d:'Керування · повтор/далі',
+      r_hymns:'Псалми / Пісні', r_hymns_d:'Списки і редактор',
+      r_programs:'Програми', r_programs_d:'Сценарії служіння',
+      // pin
+      enter_password:'Введіть пароль', login_btn:'Увійти',
+      device_locked:'Пристрій заблоковано. Зачекайте {0} с.',
+      // settings
+      settings:'Налаштування', access_level:'Рівень доступу',
+      lvl_regular:'Звичайний', lvl_stage:'Сцена', lvl_lime:'Lime',
+      device_name:"Ім'я пристрою", save_name:"Зберегти ім'я", name_saved:"Ім'я збережено",
+      language:'Мова / Language', lang_uk:'Українська', lang_en:'English',
+      gh_token:'GitHub-токен (для збереження даних у репозиторій)', save_token:'Зберегти токен',
+      token_saved:'Токен збережено', repo_prefix:'Репозиторій: ', not_gh:'Не на GitHub Pages — запис недоступний',
+      admin_section:'Адміністрування (тільки Lime)', devices_levels:'Пристрої та рівні',
+      connect_drive:'Підключити Google Drive', drive_soon:'Google Drive та бекапи — незабаром',
+      sign_out:'Вийти', sign_out_q:"Вийти? Ім'я та рівень скинуться, потрібно буде ввести пароль знову.",
+      // hymns
+      hymns_title:'Псалми / Пісні', tab_songs:'Пісні', tab_psalms:'Псалми',
+      add_song:'+ Додати пісню', add_psalm:'+ Додати псалом', list_empty_add:'Список порожній. Натисніть «+ Додати».',
+      refresh:'Оновити', with_translation:'З перекладом', clear_projector:'Очистити проектор',
+      projector_cleared:'Проектор очищено',
+      verse:'Куплет', chorus:'Приспів', bridge:'Брідж',
+      new_song:'Нова пісня', new_psalm:'Новий псалом', editing:'Редагування',
+      number:'Номер', title_field:'Назва', show_tr_label:'Показувати переклад на проекторі',
+      add_block:'+ Блок', del_block_q:'Видалити блок?', need_one_block:'Потрібен хоча б один блок',
+      block_text_ph:'Текст блоку', translation_ph:'Переклад',
+      // stage
+      stage_title:'Сцена', q_repeat:'Повтор', q_next:'Далі', q_prev:'Назад', q_stop:'Стоп',
+      signal_sent:'Сигнал: {0}', go_hymns:'Перейти до Псалмів / Пісень →', to_hymns:'До Псалмів',
+      // chair
+      chair_title:'Кафедра', m_media:'Медіа', m_text:'Текст', m_announce:'Оголошення', m_chat:'Чат', m_bible:'Біблія',
+      add_text:'+ Додати текст', add_announce:'+ Додати оголошення',
+      announce_ttl:'Оголошення автоматично зникають за 2 дні.', no_texts:'Текстів немає', no_announce:'Оголошень немає',
+      sent_projector:'Надіслано на проектор', title_optional:"Заголовок (необов'язково)", text_field:'Текст',
+      new_announce:'Нове оголошення', new_text:'Новий текст', enter_text:'Введіть текст',
+      add_drive:'+ Додати файл з Google Drive',
+      drive_hint:'Вставте посилання на файл з Google Drive (відкрийте доступ «усім, хто має посилання»). Тап по файлу — показати на проекторі.',
+      no_media:'Медіа немає', started_projector:'Запущено на проекторі', no_drive_link:'У файла немає посилання Drive',
+      no_link:'немає посилання', new_file:'Новий файл', edit_file:'Змінити файл',
+      drive_link_label:'Посилання на файл Google Drive', type_field:'Тип',
+      t_video:'Відео', t_image:'Зображення', t_presentation:'Презентація / PDF',
+      drive_parse_fail:'Не розпізнав посилання Drive', file_default:'Файл',
+      bible_not_loaded:'Книги не завантажено', back_books:'← Книги', back_chapters:'← Розділи',
+      sent_operator:'Надіслано оператору: {0}',
+      // operator
+      operator_title:'Оператор', transmission:'⏻ Трансляція', activity_log:'Лог активності',
+      clear_log:'Очистити лог', clear_log_q:'Очистити лог у всіх операторів?', chat_section:'Чат', empty_log:'Поки порожньо',
+      // programs
+      programs_title:'Програми служіння', create_program:'+ Створити програму', no_programs:'Програм немає',
+      items_count:'{0} елем.', back_programs:'← До програм', program_empty:'У програмі порожньо',
+      pt_psalm:'Псалом', pt_song:'Пісня', pt_text:'Текст', pt_announce:'Оголошення', pt_note:'Нотатка',
+      item_not_found:'Елемент не знайдено (видалено?)', text_not_found:'Текст не знайдено',
+      date_field:'Дата', program_items:'Елементи програми', add_element:'+ Додати елемент',
+      element_type:'Тип елемента', choose_x:'Оберіть: {0}', list_empty:'Список порожній',
+      note_ph:'Напр. Проповідь', del_program:'Видалити програму', del_program_q:'Видалити програму «{0}»?',
+      program_arrow:'Програма → {0} #{1} {2}',
+      // chat
+      chat_title:'Чат', no_messages:'Повідомлень поки немає', message_ph:'Повідомлення…', send_short:'Надісл.',
+      chat_only:'Тільки оператор і кафедра можуть писати', you:'Ви',
+      // admin
+      devices_title:'Пристрої', admin_hint:'Онлайн-пристрої. Тап — змінити рівень або заблокувати (на 3 хв).',
+      multi_lime:'Увага: онлайн декілька Lime-пристроїв', nobody_online:'Нікого онлайн. Натисніть ⟳ для оновлення.',
+      you_suffix:' (Ви)', offline:'офлайн', change_level:'Змінити рівень', command_sent:'Команду надіслано: {0}',
+      block_btn:'Заблокувати (3 хв)', blocked_3min:'Заблоковано на 3 хв',
+      your_level_changed:'Ваш рівень змінено: {0}', blocked_by_admin:'Пристрій заблоковано адміністратором',
+      // pwa
+      update_ready:'Доступне оновлення — перезапустіть застосунок'
+    },
+    en: {
+      cancel:'Cancel', save:'Save', saving:'Saving…', saved:'Saved ✓',
+      del:'Delete', deleted:'Deleted', confirm_title:'Confirm', yes:'Yes', close:'Close',
+      add_btn:'Add', edit:'Edit', back:'← Back', loading:'Loading…',
+      error_prefix:'Error: ', denied:'Access denied', no_conn:'No connection',
+      untitled:'(untitled)', enter_title:'Enter a title', empty_generic:'Empty for now',
+      brand:'Worship Signal', your_name:'Your name', enter_name:'Enter your name',
+      enter_name_first:'Enter your name first', password_for_role:'Password for “{0}”',
+      r_operator:'Operator', r_operator_d:'Receive messages and project',
+      r_chair:'Pulpit', r_chair_d:'Media · Text · Announcements · Bible',
+      r_stage:'Stage', r_stage_d:'Control · repeat/next',
+      r_hymns:'Hymns / Songs', r_hymns_d:'Lists and editor',
+      r_programs:'Programs', r_programs_d:'Service plans',
+      enter_password:'Enter password', login_btn:'Sign in',
+      device_locked:'Device locked. Wait {0} s.',
+      settings:'Settings', access_level:'Access level',
+      lvl_regular:'Regular', lvl_stage:'Stage', lvl_lime:'Lime',
+      device_name:'Device name', save_name:'Save name', name_saved:'Name saved',
+      language:'Language / Мова', lang_uk:'Українська', lang_en:'English',
+      gh_token:'GitHub token (to save data to the repository)', save_token:'Save token',
+      token_saved:'Token saved', repo_prefix:'Repository: ', not_gh:'Not on GitHub Pages — saving unavailable',
+      admin_section:'Administration (Lime only)', devices_levels:'Devices and levels',
+      connect_drive:'Connect Google Drive', drive_soon:'Google Drive and backups — soon',
+      sign_out:'Sign out', sign_out_q:'Sign out? Name and level will reset, you will need to enter the password again.',
+      hymns_title:'Hymns / Songs', tab_songs:'Songs', tab_psalms:'Hymns',
+      add_song:'+ Add song', add_psalm:'+ Add hymn', list_empty_add:'List is empty. Tap “+ Add”.',
+      refresh:'Refresh', with_translation:'With translation', clear_projector:'Clear projector',
+      projector_cleared:'Projector cleared',
+      verse:'Verse', chorus:'Chorus', bridge:'Bridge',
+      new_song:'New song', new_psalm:'New hymn', editing:'Editing',
+      number:'Number', title_field:'Title', show_tr_label:'Show translation on projector',
+      add_block:'+ Block', del_block_q:'Delete block?', need_one_block:'At least one block is required',
+      block_text_ph:'Block text', translation_ph:'Translation',
+      stage_title:'Stage', q_repeat:'Repeat', q_next:'Next', q_prev:'Previous', q_stop:'Stop',
+      signal_sent:'Signal: {0}', go_hymns:'Go to Hymns / Songs →', to_hymns:'To Hymns',
+      chair_title:'Pulpit', m_media:'Media', m_text:'Text', m_announce:'Announcements', m_chat:'Chat', m_bible:'Bible',
+      add_text:'+ Add text', add_announce:'+ Add announcement',
+      announce_ttl:'Announcements disappear automatically after 2 days.', no_texts:'No texts', no_announce:'No announcements',
+      sent_projector:'Sent to projector', title_optional:'Heading (optional)', text_field:'Text',
+      new_announce:'New announcement', new_text:'New text', enter_text:'Enter text',
+      add_drive:'+ Add a file from Google Drive',
+      drive_hint:'Paste a Google Drive file link (set sharing to “anyone with the link”). Tap a file to show it on the projector.',
+      no_media:'No media', started_projector:'Playing on projector', no_drive_link:'File has no Drive link',
+      no_link:'no link', new_file:'New file', edit_file:'Edit file',
+      drive_link_label:'Google Drive file link', type_field:'Type',
+      t_video:'Video', t_image:'Image', t_presentation:'Presentation / PDF',
+      drive_parse_fail:'Could not recognize the Drive link', file_default:'File',
+      bible_not_loaded:'Books not loaded', back_books:'← Books', back_chapters:'← Chapters',
+      sent_operator:'Sent to operator: {0}',
+      operator_title:'Operator', transmission:'⏻ Project', activity_log:'Activity log',
+      clear_log:'Clear log', clear_log_q:'Clear the log for all operators?', chat_section:'Chat', empty_log:'Empty for now',
+      programs_title:'Service programs', create_program:'+ Create program', no_programs:'No programs',
+      items_count:'{0} items', back_programs:'← To programs', program_empty:'Program is empty',
+      pt_psalm:'Hymn', pt_song:'Song', pt_text:'Text', pt_announce:'Announcement', pt_note:'Note',
+      item_not_found:'Item not found (deleted?)', text_not_found:'Text not found',
+      date_field:'Date', program_items:'Program items', add_element:'+ Add item',
+      element_type:'Item type', choose_x:'Choose: {0}', list_empty:'List is empty',
+      note_ph:'e.g. Sermon', del_program:'Delete program', del_program_q:'Delete program “{0}”?',
+      program_arrow:'Program → {0} #{1} {2}',
+      chat_title:'Chat', no_messages:'No messages yet', message_ph:'Message…', send_short:'Send',
+      chat_only:'Only operator and pulpit can write', you:'You',
+      devices_title:'Devices', admin_hint:'Online devices. Tap to change level or block (for 3 min).',
+      multi_lime:'Warning: several Lime devices online', nobody_online:'Nobody online. Tap ⟳ to refresh.',
+      you_suffix:' (You)', offline:'offline', change_level:'Change level', command_sent:'Command sent: {0}',
+      block_btn:'Block (3 min)', blocked_3min:'Blocked for 3 min',
+      your_level_changed:'Your level was changed: {0}', blocked_by_admin:'Device blocked by administrator',
+      update_ready:'Update available — please restart the app'
+    }
+  };
+
+  const I = {};
+  I.getLang = function(){ const l = WS.ls.get('lang','uk'); return DICT[l] ? l : 'uk'; };
+  I.setLang = function(l){ if(DICT[l]) WS.ls.set('lang', l); };
+  I.t = function(key){
+    const lang = I.getLang();
+    let s = (DICT[lang] && DICT[lang][key]);
+    if(s == null) s = (DICT.uk[key] != null ? DICT.uk[key] : key);
+    for(let i = 1; i < arguments.length; i++) s = s.replace('{' + (i-1) + '}', arguments[i]);
+    return s;
+  };
+  WS.I18n = I;
+  WS.t = I.t;
+})();

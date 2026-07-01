@@ -1,24 +1,26 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#354024">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Worship">
   <title>Worship Signal</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="stylesheet" href="core/theme.css">
 </head>
 <body>
   <div id="app">
-    <div class="screen sys-screen col center">
-      <div style="color:#E5D7C4;">Загрузка…</div>
-    </div>
+    <div class="screen sys-screen col center"><div style="color:#E5D7C4;">Loading…</div></div>
   </div>
 
-  <!-- Порядок важен: сначала ядро, потом модули экранов, затем app.js -->
-  <!-- ЯДРО -->
+  <!-- ЯДРО (порядок важен) -->
   <script src="core/store.js"></script>
+  <script src="core/i18n.js"></script>
   <script src="core/auth.js"></script>
   <script src="core/data.js"></script>
   <script src="core/sync.js"></script>
@@ -27,7 +29,7 @@
   <script src="core/log.js"></script>
   <script src="core/ui.js"></script>
 
-  <!-- МОДУЛИ ЭКРАНОВ (каждый можно править независимо) -->
+  <!-- МОДУЛИ ЭКРАНОВ -->
   <script src="modules/chat.js"></script>
   <script src="modules/pin.js"></script>
   <script src="modules/role.js"></script>
@@ -39,18 +41,25 @@
   <script src="modules/operator.js"></script>
   <script src="modules/programs.js"></script>
 
-  <!-- СТАРТ (последним) -->
+  <!-- СТАРТ -->
   <script src="core/app.js"></script>
   <script>
-    // блокируем двойной тап-зум на iOS
     document.addEventListener('dblclick', e => e.preventDefault(), { passive:false });
-    // запуск
+
+    // PWA: регистрация service worker (офлайн + обновления)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('service-worker.js').catch(function(){});
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function(){
+          if(refreshing) return; refreshing = true; window.location.reload();
+        });
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', function(){
       try { WS.App.boot(); }
-      catch(e){
-        document.getElementById('app').innerHTML =
-          '<div class="pad" style="color:#E5D7C4">Ошибка запуска: ' + (e.message||e) + '</div>';
-      }
+      catch(e){ document.getElementById('app').innerHTML = '<div class="pad" style="color:#E5D7C4">Error: ' + (e.message||e) + '</div>'; }
     });
   </script>
 </body>
