@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверка связи · Worship Signal</title>
+<style>
+  body{margin:0;font-family:Georgia,serif;background:#354024;color:#E5D7C4;padding:16px;line-height:1.5}
+  h1{font-size:20px;margin:0 0 12px}
+  .status{padding:16px;border-radius:10px;text-align:center;font-size:18px;font-weight:bold;margin-bottom:14px}
+  .ok{background:#3a5a2a;color:#d6f0c4}
+  .bad{background:#5a2a20;color:#f0c4b4}
+  .wait{background:#4c3d19;color:#e5d7c4}
+  button{width:100%;padding:14px;border:none;border-radius:8px;font-size:16px;font-family:Georgia,serif;margin-bottom:10px;cursor:pointer}
+  .send{background:#889063;color:#1a1a1a;font-weight:bold}
+  .reset{background:#CFBB99;color:#1a1a1a}
+  .who{background:#2a331d;border:1px solid #556b3a;border-radius:8px;padding:10px;margin-bottom:12px;font-size:14px}
+  #log{background:#2a331d;border-radius:8px;padding:10px;min-height:120px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+  .muted{opacity:.7;font-size:13px}
+  .row{margin:4px 0}
+  .me{color:#cfe0b4}
+  .other{color:#f0d9a0;font-weight:bold}
+</style>
+</head>
+<body>
+  <h1>Проверка связи Worship Signal</h1>
+
+  <div id="status" class="status wait">Подключаюсь…</div>
+
+  <div class="who">Это устройство: <b id="who">…</b><br>
+  <span class="muted">Открой эту страницу на двух устройствах. Нажми «Отправить тест» на одном — оно должно появиться на другом.</span></div>
+
+  <button class="send" id="sendBtn">Отправить тест</button>
+  <button class="reset" id="resetBtn">Сбросить приложение (очистить кэш)</button>
+
+  <div class="muted" style="margin:10px 0 4px">Журнал:</div>
+  <div id="log"></div>
+
+<script>
+  var TOPIC = 'worship-signal-bfupc-7c3a9';
+  var BASE  = 'https://ntfy.sh/' + TOPIC;
+  var ME = 'dev-' + Math.random().toString(36).slice(2, 6);
+  document.getElementById('who').textContent = ME;
+
+  var statusEl = document.getElementById('status');
+  var logEl = document.getElementById('log');
+  var gotAny = false;
+
+  function setStatus(cls, text){ statusEl.className = 'status ' + cls; statusEl.textContent = text; }
+  function stamp(){ var d = new Date(); return d.toLocaleTimeString(); }
+  function log(html, cls){ var div = document.createElement('div'); div.className = 'row ' + (cls||''); div.innerHTML = '[' + stamp() + '] ' + html; logEl.insertBefore(div, logEl.firstChild); }
+
+  // подписка на канал (SSE)
+  var es;
+  function connect(){
+    try {
+      es = new EventSource(BASE + '/sse');
+      es.onopen = function(){ setStatus('ok', '✓ Связь с каналом установлена'); log('Подключено к каналу'); };
+      es.onmessage = function(ev){
+        var env; try { env = JSON.parse(ev.data); } catch(e){ return; }
+        if(env.event !== 'message') return;              // open/keepalive пропускаем
+        gotAny = true;
+        var msg; try { msg = JSON.parse(env.message); } catch(e){ msg = { from:'?', text: env.message }; }
+        var mine = (msg.from === ME);
+        log((mine ? '⟳ вернулось моё' : '⬇ ПРИШЛО с другого устройства') + ' (' + (msg.from||'?') + '): ' + (msg.text||''), mine ? 'me' : 'other');
+      };
+      es.onerror = function(){ setStatus('bad', '✗ Ошибка связи с каналом'); log('Ошибка соединения, переподключаюсь…'); };
+    } catch(e){ setStatus('bad', '✗ Не удалось открыть соединение'); }
+  }
+  connect();
+
+  // отправка теста (POST)
+  document.getElementById('sendBtn').onclick = function(){
+    var payload = JSON.stringify({ from: ME, text: 'тест ' + stamp() });
+    log('⬆ отправляю тест…', 'me');
+    fetch(BASE, { method:'POST', body: payload })
+      .then(function(r){ if(r.ok) log('Отправлено (сервер принял)'); else log('Сервер ответил ошибкой: ' + r.status); })
+      .catch(function(e){ log('НЕ отправилось: ' + e.message); setStatus('bad', '✗ Сеть блокирует ntfy.sh'); });
+  };
+
+  // сброс: удалить service worker и кэш, перезагрузить
+  document.getElementById('resetBtn').onclick = function(){
+    if(!confirm('Удалить кэш и service worker? Страница перезагрузится. Данные (песни и т.д.) не тронутся.')) return;
+    var tasks = [];
+    if('serviceWorker' in navigator){
+      tasks.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }));
+    }
+    if(window.caches){
+      tasks.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }));
+    }
+    Promise.all(tasks).then(function(){ alert('Готово. Кэш и service worker удалены. Сейчас перезагружу.'); location.reload(true); })
+      .catch(function(){ location.reload(true); });
+  };
+
+  // если за 20 секунд ни одного события — вероятно, сеть блокирует
+  setTimeout(function(){ if(!gotAny && statusEl.className.indexOf('ok') < 0){ setStatus('bad', '✗ Канал недоступен на этой сети'); } }, 20000);
+</script>
+</body>
+</html>
