@@ -1,6 +1,17 @@
 {
   "schema_version": 1,
   "items": [
-    { "id": "m_sample", "title": "Пример видео (замените drive_id)", "type": "video", "drive_id": "" }
+    {
+      "id": "m_sample",
+      "title": "Пример видео (замените drive_id)",
+      "type": "video",
+      "drive_id": ""
+    },
+    {
+      "id": "imr2o3jupetvm",
+      "title": "IMG-d70278bd4cdb1a40a8207a60e05d84a6-V.jpg",
+      "type": "image",
+      "drive_id": "13wAVGR72xBhBjzQdoD7Pc4j9YU-hVc-b"
+    }
   ]
 }
