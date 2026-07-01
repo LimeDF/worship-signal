@@ -64,6 +64,11 @@
       WS.Data.refresh(p.collection);
       if(p.collection === 'config') setTimeout(applyConfig, 800);   // подхватить общий Client ID
     }
+    // мгновенная синхронизация Google Client ID между устройствами (надёжнее файла)
+    if(p.t === 'config' && p.client_id && WS.Drive) WS.Drive.setClientIdShared(p.client_id);
+    if(p.t === 'config_request' && !mine && WS.Drive && WS.Drive.getClientId()){
+      setTimeout(function(){ WS.Sync.send({ t:'config', client_id: WS.Drive.getClientId() }); }, Math.floor(Math.random()*1500));
+    }
 
     if(typeof WS.state.onMessage === 'function'){ try { WS.state.onMessage(p); } catch(e){ console.error(e); } }
   }
@@ -82,5 +87,8 @@
     else WS.App.show('role');
 
     WS.Sync.restore();          // историю (последний слайд + лог) добираем в фоне
+
+    // если своего Client ID нет — попросить у других устройств (мгновенно)
+    setTimeout(function(){ if(WS.Drive && !WS.Drive.getClientId()) WS.Sync.send({ t:'config_request' }); }, 1500);
   };
 })();

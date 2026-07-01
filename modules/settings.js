@@ -60,7 +60,8 @@
         WS.UI.el('button',{class:'btn btn-ghost', onClick:async()=>{
           const v = cid.value.trim();
           WS.Drive.setClientId(v);
-          // сохранить в общий config.json — разойдётся на все устройства
+          WS.Sync.send({ t:'config', client_id:v });    // мгновенно разослать на все устройства
+          // и сохранить в общий config.json (для тех, кто подключится позже)
           try {
             const items = (WS.Data.items('config') || []).slice();
             if(items.length) items[0] = Object.assign({}, items[0], { drive_client_id:v });
