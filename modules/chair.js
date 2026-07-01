@@ -117,7 +117,27 @@
   // МЕДИА (Google Drive)
   function renderMedia(wrap){
     WS.UI.clear(wrap);
-    if(WS.Auth.canAdd()) wrap.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'12px'}, onClick:()=>openMediaEditor(wrap, null)}, WS.t('add_drive')));
+    if(WS.Auth.canAdd()){
+      wrap.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'8px'}, onClick:()=>openMediaEditor(wrap, null)}, WS.t('add_drive')));
+      if(WS.Drive && WS.Drive.isConfigured()){
+        const fileInp = WS.UI.el('input',{type:'file', style:{display:'none'}});
+        fileInp.addEventListener('change', async function(){
+          const f = fileInp.files && fileInp.files[0]; if(!f) return;
+          WS.UI.toast(WS.t('drive_uploading'));
+          try {
+            const id = await WS.Drive.upload(f, f.name);
+            const type = f.type.indexOf('image') === 0 ? 'image' : (f.type.indexOf('video') === 0 ? 'video' : 'presentation');
+            const items = WS.Data.items('media').slice();
+            items.push({ id:WS.Data.newId(), title:f.name, type:type, drive_id:id });
+            await WS.Data.save('media', items, 'Upload media ' + f.name);
+            WS.UI.toast(WS.t('drive_uploaded')); renderMedia(wrap);
+          } catch(e){ WS.UI.toast(WS.t('drive_error', e.message||''),'error'); }
+          fileInp.value = '';
+        });
+        wrap.appendChild(fileInp);
+        wrap.appendChild(WS.UI.el('button',{class:'btn btn-tan', style:{marginBottom:'12px'}, onClick:()=>fileInp.click()}, WS.t('drive_upload')));
+      }
+    }
     wrap.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'12px'}}, WS.t('drive_hint')));
     const items = WS.Data.items('media');
     if(!items.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('no_media'))); return; }

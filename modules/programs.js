@@ -1,4 +1,10 @@
-/* programs.js — Программы служения (локализован). */
+/* programs.js — Программы служения (локализован) + режим ведения (презентер).
+   Тап по пункту программы открывает презентер:
+     - предпросмотр контента (блоки песни/псалма или текст),
+     - стрелки ◀ ▶ по краям — переход между пунктами программы,
+     - внизу 2 кнопки: [⚑ Оператору] (запрос, все уровни) и [На экран] (показ, Сцена+),
+     - иконка очистки экрана в шапке (Сцена+).
+   Песня/псалом/текст/объявление — всё можно вывести на экран. */
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
 
@@ -11,7 +17,7 @@
     const screen = WS.UI.el('div',{class:'screen app-screen col'});
     const content = WS.UI.el('div',{class:'scroll grow pad'});
 
-    function top(title, back){ return WS.UI.el('div',{class:'topbar'}, WS.UI.el('button',{class:'icon-btn bare', onClick:back},'←'), WS.UI.el('div',{class:'title'}, title)); }
+    function top(title, back, right){ return WS.UI.el('div',{class:'topbar'}, WS.UI.el('button',{class:'icon-btn bare', onClick:back},'←'), WS.UI.el('div',{class:'title'}, title), right || null); }
 
     if(view === 'list'){
       screen.appendChild(top(WS.t('programs_title'), ()=>WS.App.show('role')));
@@ -29,6 +35,11 @@
       if(!current){ WS.App.show('programs', {view:'list'}); return; }
       screen.appendChild(top(WS.t('editing'), ()=>WS.App.show('programs', {view: current._saved ? 'detail' : 'list'})));
       screen.appendChild(content); root.appendChild(screen); renderEdit(content); return;
+    }
+    if(view === 'present'){
+      if(!current){ WS.App.show('programs', {view:'list'}); return; }
+      renderPresent(root, (params && params.index) || 0);
+      return;
     }
   };
 
@@ -58,30 +69,111 @@
     if(!current.items || !current.items.length){ content.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('program_empty'))); return; }
 
     current.items.forEach((el, i) => {
-      content.appendChild(WS.UI.el('div',{class:'row', onClick:()=>useItem(content, el)},
+      content.appendChild(WS.UI.el('div',{class:'row', onClick:()=>WS.App.show('programs', {view:'present', index:i})},
         WS.UI.el('div',{class:'num', style:{minWidth:'30px'}}, String(i+1)),
         WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, label(el)), WS.UI.el('div',{class:'prev'}, typeLabel(el.type))),
-        el.type === 'note' ? null : WS.UI.el('span',{class:'muted'},'›')
+        WS.UI.el('span',{class:'muted'},'›')
       ));
     });
   }
 
-  function useItem(content, el){
-    if(el.type === 'note'){ WS.UI.toast(el.text || WS.t('pt_note')); return; }
+  // ---------- ПРЕЗЕНТЕР (ведение) ----------
+  function renderPresent(root, index){
+    const items = current.items || [];
+    if(!items.length){ WS.App.show('programs', {view:'detail'}); return; }
+    index = Math.max(0, Math.min(items.length - 1, index));
+    const el = items[index];
+    const canProject = WS.Auth.canEdit();   // Сцена и выше
+    let selectedBlock = 0;
+
+    const screen = WS.UI.el('div',{class:'screen app-screen col'});
+
+    // шапка: назад к программе + очистка экрана (Сцена+)
+    const clearBtn = canProject ? WS.UI.el('button',{class:'icon-btn', title:WS.t('clear_projector'), onClick:()=>{ WS.Sync.send({t:'clear'}); WS.Projector.set({t:'clear'}); WS.UI.toast(WS.t('projector_cleared')); }},'🗑') : null;
+    screen.appendChild(WS.UI.el('div',{class:'topbar'},
+      WS.UI.el('button',{class:'icon-btn bare', onClick:()=>WS.App.show('programs', {view:'detail'})},'←'),
+      WS.UI.el('div',{class:'title'}, current.title || WS.t('programs_title')),
+      clearBtn
+    ));
+
+    // навигация между пунктами: ◀ N/M ▶
+    const prevBtn = WS.UI.el('button',{class:'icon-btn', onClick:()=>{ if(index>0) WS.App.show('programs', {view:'present', index:index-1}); }},'◀');
+    const nextBtn = WS.UI.el('button',{class:'icon-btn', onClick:()=>{ if(index<items.length-1) WS.App.show('programs', {view:'present', index:index+1}); }},'▶');
+    if(index===0) prevBtn.disabled = true;
+    if(index===items.length-1) nextBtn.disabled = true;
+    screen.appendChild(WS.UI.el('div',{style:{display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px', borderBottom:'1px solid var(--line)'}},
+      prevBtn,
+      WS.UI.el('div',{style:{flex:1, textAlign:'center'}},
+        WS.UI.el('div',{style:{fontWeight:'bold'}}, typeLabel(el.type) + ' · ' + label(el)),
+        WS.UI.el('div',{class:'muted', style:{fontSize:'12px'}}, WS.t('present_pos', index+1, items.length))
+      ),
+      nextBtn
+    ));
+
+    // тело: предпросмотр
+    const body = WS.UI.el('div',{class:'scroll grow pad'});
+    screen.appendChild(body);
+
+    let blockCards = [];
+    function project(payload, toast){ WS.Sync.send(payload); WS.Projector.set(payload); if(toast) WS.UI.toast(toast); }
+
     if(el.type === 'psalm' || el.type === 'song'){
       const item = (WS.Data.items(COLL[el.type]) || []).find(x => x.id === el.ref_id);
-      if(!item){ WS.UI.toast(WS.t('item_not_found'),'error'); return; }
-      WS.Sync.send({ t:'activity', kind:'program', label: WS.t('program_arrow', el.type==='psalm'?WS.t('pt_psalm'):WS.t('pt_song'), (item.number||''), (item.title||'')) });
-      WS.Hymns.renderBlocks(content, item, { onBack: ()=>renderDetail(content) });
-      return;
-    }
-    if(el.type === 'text' || el.type === 'announcement'){
+      if(!item){ body.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('item_not_found'))); }
+      else {
+        if(canProject) body.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'10px'}}, WS.t('tap_block_hint')));
+        (item.blocks || []).forEach((b, bi) => {
+          const tag = b.type==='chorus'?WS.t('chorus'):b.type==='bridge'?WS.t('bridge'):WS.t('verse');
+          const tagCls = b.type==='chorus'?'tag-chorus':b.type==='bridge'?'tag-bridge':'tag-verse';
+          const card = WS.UI.el('div',{class:'card', style:{cursor: canProject?'pointer':'default'}, onClick: canProject ? ()=>{
+            selectedBlock = bi;
+            const payload = { t:'block', title:item.title||'', number:item.number??'', blockType:b.type||'verse', text:b.text||'', translation:(item.show_translation&&b.translation)?b.translation:'', showTranslation:!!(item.show_translation&&b.translation) };
+            project(payload); blockCards.forEach(c=>c.style.borderColor=''); card.style.borderColor='var(--tan)';
+          } : null },
+            WS.UI.el('span',{class:'block-tag '+tagCls}, tag),
+            WS.UI.el('div',{style:{whiteSpace:'pre-wrap'}}, b.text || ''),
+            (item.show_translation && b.translation) ? WS.UI.el('div',{class:'muted', style:{whiteSpace:'pre-wrap', marginTop:'8px', fontSize:'14px'}}, b.translation) : null
+          );
+          blockCards.push(card); body.appendChild(card);
+        });
+      }
+    } else if(el.type === 'text' || el.type === 'announcement'){
       const item = (WS.Data.items(COLL[el.type]) || []).find(x => x.id === el.ref_id);
-      const body = item ? (item.text || item.body || '') : (el.text || '');
-      if(!body){ WS.UI.toast(WS.t('text_not_found'),'error'); return; }
-      const payload = { t:'text', body };
-      WS.Sync.send(payload); WS.Projector.set(payload); WS.UI.toast(WS.t('sent_projector'));
+      const bodyText = item ? (item.text || item.body || '') : (el.text || '');
+      body.appendChild(WS.UI.el('div',{class:'card'}, WS.UI.el('div',{style:{whiteSpace:'pre-wrap'}}, bodyText || WS.t('no_preview'))));
+    } else {
+      body.appendChild(WS.UI.el('div',{class:'card'}, WS.UI.el('div',{style:{whiteSpace:'pre-wrap'}}, el.text || WS.t('pt_note'))));
     }
+
+    // низ: 2 кнопки [⚑ Оператору] [На экран]
+    function sendToScreen(){
+      if(!canProject){ WS.UI.toast(WS.t('need_stage'),'error'); return; }
+      if(el.type === 'psalm' || el.type === 'song'){
+        const item = (WS.Data.items(COLL[el.type]) || []).find(x => x.id === el.ref_id);
+        if(!item || !item.blocks || !item.blocks.length){ WS.UI.toast(WS.t('item_not_found'),'error'); return; }
+        const b = item.blocks[selectedBlock] || item.blocks[0];
+        project({ t:'block', title:item.title||'', number:item.number??'', blockType:b.type||'verse', text:b.text||'', translation:(item.show_translation&&b.translation)?b.translation:'', showTranslation:!!(item.show_translation&&b.translation) }, WS.t('sent_projector'));
+        blockCards.forEach((c,i)=> c.style.borderColor = (i===(selectedBlock|0))?'var(--tan)':'');
+      } else if(el.type === 'text' || el.type === 'announcement'){
+        const item = (WS.Data.items(COLL[el.type]) || []).find(x => x.id === el.ref_id);
+        const bodyText = item ? (item.text || item.body || '') : (el.text || '');
+        if(!bodyText){ WS.UI.toast(WS.t('text_not_found'),'error'); return; }
+        project({ t:'text', body:bodyText }, WS.t('sent_projector'));
+      } else { WS.UI.toast(WS.t('no_preview'),'error'); }
+    }
+    function requestOperator(){
+      WS.Sync.send({ t:'activity', kind:'program', label: WS.t('op_request', typeLabel(el.type)+' · '+label(el)) });
+      WS.UI.toast(WS.t('request_sent'));
+    }
+
+    const screenBtn = WS.UI.el('button',{class:'btn', onClick:sendToScreen}, WS.t('to_screen'));
+    if(!canProject) screenBtn.classList.add('btn-ghost');
+    screen.appendChild(WS.UI.el('div',{style:{padding:'10px 12px', borderTop:'1px solid var(--line)', display:'flex', gap:'10px'}},
+      WS.UI.el('button',{class:'btn btn-ghost', onClick:requestOperator, style:{flex:1}}, WS.t('to_operator')),
+      WS.UI.el('div',{style:{flex:1, display:'flex'}}, screenBtn)
+    ));
+
+    root.appendChild(screen);
   }
 
   function renderEdit(content){
@@ -138,14 +230,14 @@
   function addItem(after){
     const body = WS.UI.el('div',{class:'col'});
     const m = WS.UI.modal({ title:WS.t('element_type'), body, buttons:[{label:WS.t('cancel'), kind:'ghost'}] });
-    [['psalm',WS.t('pt_psalm')],['song',WS.t('pt_song')],['text',WS.t('pt_text')],['announcement',WS.t('pt_announce')],['note',WS.t('pt_note')]].forEach(([type,label])=>{
-      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'8px'}, onClick:()=>{ m.close(); if(type === 'note') addNote(after); else pickFrom(type, after); }}, label));
+    [['psalm',WS.t('pt_psalm')],['song',WS.t('pt_song')],['text',WS.t('pt_text')],['announcement',WS.t('pt_announce')],['note',WS.t('pt_note')]].forEach(([type,lbl])=>{
+      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'8px'}, onClick:()=>{ m.close(); if(type === 'note') addNote(after); else pickFrom(type, after); }}, lbl));
     });
   }
 
   function addNote(after){
     const inp = WS.UI.el('input',{class:'input', placeholder:WS.t('note_ph')});
-    const m = WS.UI.modal({ title:WS.t('pt_note'), body:inp, buttons:[
+    WS.UI.modal({ title:WS.t('pt_note'), body:inp, buttons:[
       { label:WS.t('cancel'), kind:'ghost' },
       { label:WS.t('add_btn'), onClick:()=>{ const t = inp.value.trim(); if(!t) return true; current.items.push({ type:'note', text:t }); after(); } }
     ]});

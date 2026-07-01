@@ -1,10 +1,8 @@
 /* ============================================================
    app.js — загружается ПОСЛЕДНИМ. Старт и маршрутизация.
-   Глобальный диспетчер сообщений делает ГЛАВНОЕ надёжно:
-     - контент (block/text/media/clear) → WS.Projector (рисует всегда);
-     - события → WS.Log (накопительный лог, виден любому оператору);
-     - чат → WS.Chat; обновление данных → WS.Data.refresh.
-   Только после этого зовётся обработчик текущего экрана (если есть).
+   Диспетчер строит проектор и лог ИЗ ПОТОКА ntfy (свои сообщения
+   тоже обрабатываются — иначе лог расходится между устройствами).
+   При старте восстанавливаем историю (последний слайд + лог), затем live.
    ============================================================ */
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
@@ -21,55 +19,56 @@
     try {
       const fn = WS.App.screens[name];
       if(fn) fn(root, params || {});
-      else root.appendChild(WS.UI.el('div',{class:'pad'}, 'Экран не найден: ' + name));
+      else root.appendChild(WS.UI.el('div',{class:'pad'}, 'Screen not found: ' + name));
     } catch(e){
-      console.error('Ошибка экрана', name, e);
+      console.error('screen error', name, e);
       root.appendChild(WS.UI.el('div',{class:'pad'},
-        WS.UI.el('div',{style:{color:'var(--danger)'}}, 'Ошибка экрана «'+name+'».'),
+        WS.UI.el('div',{style:{color:'var(--danger)'}}, WS.t('error_prefix') + name),
         WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginTop:'8px'}}, String(e.message || e))
       ));
     }
   };
 
-  function blockName(t){ return t==='chorus'?'Припев':t==='bridge'?'Бридж':'Куплет'; }
-  function signalName(a){ return { repeat:'Повтор', next:'Далее', prev:'Назад', exit:'Стоп' }[a] || a; }
+  function blockName(t){ return t==='chorus'?WS.t('chorus'):t==='bridge'?WS.t('bridge'):WS.t('verse'); }
+  function signalName(a){ return { repeat:WS.t('q_repeat'), next:WS.t('q_next'), prev:WS.t('q_prev'), exit:WS.t('q_stop') }[a] || a; }
   function prev(s){ return WS.UI.preview(s, 40); }
 
-  // глобальный обработчик ВСЕХ входящих сообщений
   function globalHandler(p){
-    // ----- ПРОЕКТОР (рисует всегда, независимо от экрана) -----
+    const mine = (p._dev === WS.Auth.getDeviceId());
+
+    // ----- ПРОЕКТОР (одинаково на всех устройствах) -----
     if(p.t === 'block' || p.t === 'text' || p.t === 'media') WS.Projector.set(p);
     else if(p.t === 'clear') WS.Projector.set({ t:'clear' });
 
-    // ----- ЛОГ (накопительный, общий для операторов) -----
-    if(p.t === 'block')       WS.Log.add({ source:p._name, kind:'block',   label:'#'+(p.number||'')+' '+(p.title||'')+' — '+blockName(p.blockType) });
-    else if(p.t === 'text')   WS.Log.add({ source:p._name, kind:'block',   label:'Текст: '+prev(p.body) });
-    else if(p.t === 'media')  WS.Log.add({ source:p._name, kind:'block',   label:'Медиа: '+(p.title||'') });
-    else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'signal',  label:'Проектор очищен' });
-    else if(p.t === 'signal') WS.Log.add({ source:p._name, kind:'signal',  label:'Сигнал: '+signalName(p.action) });
-    else if(p.t === 'activity' && p.kind === 'bible')   WS.Log.add({ source:p._name, kind:'bible',   label:'Библия: '+p.label });
+    // ----- ЛОГ (строится из потока, свои события тоже) -----
+    if(p.t === 'block')       WS.Log.add({ source:p._name, kind:'block',  label:'#'+(p.number||'')+' '+(p.title||'')+' — '+blockName(p.blockType) });
+    else if(p.t === 'text')   WS.Log.add({ source:p._name, kind:'block',  label:WS.t('m_text')+': '+prev(p.body) });
+    else if(p.t === 'media')  WS.Log.add({ source:p._name, kind:'block',  label:WS.t('m_media')+': '+(p.title||'') });
+    else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'signal', label:WS.t('projector_cleared') });
+    else if(p.t === 'signal') WS.Log.add({ source:p._name, kind:'signal', label:WS.t('signal_sent', signalName(p.action)) });
+    else if(p.t === 'activity' && p.kind === 'bible')   WS.Log.add({ source:p._name, kind:'bible',   label:WS.t('m_bible')+': '+p.label });
     else if(p.t === 'activity' && p.kind === 'program') WS.Log.add({ source:p._name, kind:'program', label:p.label });
 
-    if(p.t === 'log_clear') WS.Log.clear(true);   // очистка лога с другого устройства
+    if(p.t === 'log_clear') WS.Log.clear(true);
 
-    // ----- прочее -----
-    if(p.t === 'chat' && WS.Chat) WS.Chat.receive(p);
-    if(p.t === 'data' && p.collection && WS.Data) WS.Data.refresh(p.collection);
+    // ----- чат/данные: свои пропускаем (уже применены локально) -----
+    if(p.t === 'chat' && !mine && WS.Chat) WS.Chat.receive(p);
+    if(p.t === 'data' && !mine && p.collection && WS.Data) WS.Data.refresh(p.collection);
 
-    // обработчик текущего экрана (например индикатор связи)
     if(typeof WS.state.onMessage === 'function'){ try { WS.state.onMessage(p); } catch(e){ console.error(e); } }
   }
 
   WS.App.boot = function(){
     WS.Auth.getDeviceId();
-
     WS.Sync.on(globalHandler);
-    WS.Sync.connect();
     if(WS.Presence) WS.Presence.start();
 
     ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
 
     if(!WS.Auth.getLevel()) WS.App.show('pin');
     else WS.App.show('role');
+
+    // восстановить слайд+лог из истории, затем включить live
+    WS.Sync.restore(function(){ WS.Sync.connect(); });
   };
 })();

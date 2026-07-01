@@ -18,6 +18,9 @@
     if(L._onAdd){ try { L._onAdd(); } catch(e){} }
   };
 
+  // тихая очистка (без рассылки) — для пересборки лога из истории при старте
+  L.reset = function(){ WS.ls.set(KEY, []); if(L._onAdd){ try { L._onAdd(); } catch(e){} } };
+
   // local=true — пришло от другого устройства, не рассылать повторно
   L.clear = function(local){
     WS.ls.set(KEY, []);

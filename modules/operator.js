@@ -35,7 +35,6 @@
         WS.UI.el('button',{class:'btn', onClick:()=>setMode('transmission')}, WS.t('transmission')),
         WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{
           WS.Sync.send({ t:'clear' }); WS.Projector.set({ t:'clear' });
-          WS.Log.add({ source:WS.t('you'), kind:'signal', label:WS.t('projector_cleared') });
         }}, WS.t('clear_projector'))
       )
     ));

@@ -49,7 +49,39 @@
 
       body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('admin_section')));
       body.appendChild(WS.UI.el('button',{class:'btn btn-tan', onClick:()=>WS.App.show('admin')}, WS.t('devices_levels')));
-      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'10px'}, onClick:()=>WS.UI.toast(WS.t('drive_soon'))}, WS.t('connect_drive')));
+
+      // --- Google Drive (загрузка файлов + резервные копии) ---
+      body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('drive_section')));
+      body.appendChild(WS.UI.el('div',{class:'field-label', style:{marginTop:0, fontSize:'12px'}}, WS.t('drive_client_id')));
+      const cid = WS.UI.el('input',{class:'input', placeholder:'…apps.googleusercontent.com', value:WS.Drive.getClientId()});
+      body.appendChild(cid);
+      body.appendChild(WS.UI.el('div',{class:'spacer'}));
+      body.appendChild(WS.UI.el('div',{class:'btn-row'},
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ WS.Drive.setClientId(cid.value); WS.UI.toast(WS.t('saved')); }}, WS.t('save')),
+        WS.UI.el('button',{class:'btn', onClick:async()=>{
+          if(!WS.Drive.isConfigured()){ WS.UI.toast(WS.t('drive_need_id'),'error'); return; }
+          try { await WS.Drive.connect(); WS.UI.toast(WS.t('drive_connected')); }
+          catch(e){ WS.UI.toast(WS.t('drive_error', e.message||''),'error'); }
+        }}, WS.t('connect_drive'))
+      ));
+
+      const lastTs = WS.Drive.lastBackup();
+      const lastTxt = lastTs ? daysAgo(lastTs) : WS.t('backup_never');
+      const lastLine = WS.UI.el('div',{class:'muted', style:{fontSize:'12px', margin:'10px 0'}}, WS.t('backup_last', lastTxt) + (WS.Drive.backupDue() ? ' · ' + WS.t('backup_due') : ''));
+      body.appendChild(lastLine);
+      body.appendChild(WS.UI.el('button',{class:'btn', onClick:async()=>{
+        if(!WS.Drive.isConfigured()){ WS.UI.toast(WS.t('drive_need_id'),'error'); return; }
+        WS.UI.toast(WS.t('backup_running'));
+        try { await WS.Drive.backup(); WS.UI.toast(WS.t('backup_done')); WS.App.show('settings'); }
+        catch(e){ WS.UI.toast(WS.t('drive_error', e.message||''),'error'); }
+      }}, WS.t('backup_now')));
+      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'10px'}, onClick:()=>{
+        WS.UI.confirm(WS.t('restore_confirm'), async()=>{
+          WS.UI.toast(WS.t('restore_running'));
+          try { await WS.Drive.restoreLatest(); WS.UI.toast(WS.t('restore_done')); }
+          catch(e){ WS.UI.toast(e.message==='no_backups' ? WS.t('restore_none') : WS.t('drive_error', e.message||''),'error'); }
+        }, WS.t('restore_latest'));
+      }}, WS.t('restore_latest')));
     }
 
     // выход
@@ -62,4 +94,9 @@
     screen.appendChild(body);
     root.appendChild(screen);
   };
+
+  function daysAgo(ts){
+    const d = Math.floor((Date.now() - ts) / (24 * 3600 * 1000));
+    return d <= 0 ? WS.t('today_word') : WS.t('days_ago', d);
+  }
 })();

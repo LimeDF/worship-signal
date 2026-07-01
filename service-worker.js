@@ -5,7 +5,7 @@
    Внешние API (ntfy, github, google) — network-only (не кэшируем).
    Версию кэша меняем при обновлении приложения, чтобы сбросить старое.
    ============================================================ */
-const CACHE = 'worship-signal-v1';
+const CACHE = 'worship-signal-v3';
 
 const ASSETS = [
   './',
@@ -16,6 +16,7 @@ const ASSETS = [
   './core/i18n.js',
   './core/auth.js',
   './core/data.js',
+  './core/drive.js',
   './core/sync.js',
   './core/presence.js',
   './core/projector.js',

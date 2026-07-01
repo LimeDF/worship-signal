@@ -24,6 +24,7 @@
 
   // глобальный обработчик входящих (регистрируется в Sync при start)
   function handle(p){
+    if(p._dev === myId()) return;                   // свои presence/команды игнорируем
     if(p.t === 'presence'){ record(p); }
     else if(p.t === 'presence_request'){ beat(); }
     else if(p.t === 'set_level'){ if(p.target === myId() && p._lvl === 'lime') applyLevel(p.level); }
