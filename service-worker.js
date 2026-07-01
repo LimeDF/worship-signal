@@ -1,77 +1,36 @@
 /* ============================================================
-   service-worker.js — офлайн-кэш приложения.
-   Статика (код, стили, иконки) — cache-first (работает офлайн).
-   Данные (data/*.json) — network-first (всегда свежие, офлайн — из кэша).
-   Внешние API (ntfy, github, google) — network-only (не кэшируем).
-   Версию кэша меняем при обновлении приложения, чтобы сбросить старое.
+   service-worker.js — v4. НАДЁЖНОЕ обновление.
+   Код и данные — network-first: онлайн ВСЕГДА берём свежую версию,
+   кэш только как запас для офлайна. Это чинит «застрял старый код».
+   Установка не может сломаться (не пытаемся закэшировать всё разом).
+   Внешние сервисы (ntfy/github/google) — только сеть, не трогаем.
    ============================================================ */
-const CACHE = 'worship-signal-v3';
+const CACHE = 'worship-signal-v4';
 
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './core/theme.css',
-  './core/store.js',
-  './core/i18n.js',
-  './core/auth.js',
-  './core/data.js',
-  './core/drive.js',
-  './core/sync.js',
-  './core/presence.js',
-  './core/projector.js',
-  './core/log.js',
-  './core/ui.js',
-  './core/app.js',
-  './modules/chat.js',
-  './modules/pin.js',
-  './modules/role.js',
-  './modules/settings.js',
-  './modules/admin.js',
-  './modules/hymns.js',
-  './modules/stage.js',
-  './modules/chair.js',
-  './modules/operator.js',
-  './modules/programs.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/maskable-512.png'
-];
+// при установке — сразу берём управление, без «всё или ничего»
+self.addEventListener('install', function(e){ self.skipWaiting(); });
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
-});
-
-self.addEventListener('activate', (e) => {
+// при активации — удаляем ВСЕ прежние кэши (сбрасываем старый застрявший код)
+self.addEventListener('activate', function(e){
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+    caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){ return caches.delete(k); })); })
+      .then(function(){ return self.clients.claim(); })
   );
 });
 
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if(req.method !== 'GET'){ return; }
-  const url = new URL(req.url);
+self.addEventListener('fetch', function(e){
+  var req = e.request;
+  if(req.method !== 'GET') return;
+  var url = new URL(req.url);
 
-  // внешние сервисы — не трогаем (только сеть)
-  if(/ntfy\.sh|api\.github\.com|raw\.githubusercontent\.com|googleapis\.com|google\.com|gstatic\.com/.test(url.host)){
-    return;
-  }
+  // внешние сервисы — не вмешиваемся (реальное время, API)
+  if(/ntfy\.sh|api\.github\.com|raw\.githubusercontent\.com|googleapis\.com|google\.com|gstatic\.com/.test(url.host)) return;
 
-  // данные приложения — сначала сеть, при офлайне из кэша
-  if(url.pathname.indexOf('/data/') !== -1){
-    e.respondWith(
-      fetch(req).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  // статика — сначала кэш, потом сеть
+  // всё своё (код, стили, данные, иконки) — СНАЧАЛА СЕТЬ, кэш только запас
   e.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(res => {
-      const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res;
-    }).catch(() => cached))
+    fetch(req).then(function(res){
+      try { var copy = res.clone(); caches.open(CACHE).then(function(c){ c.put(req, copy); }); } catch(err){}
+      return res;
+    }).catch(function(){ return caches.match(req); })
   );
 });

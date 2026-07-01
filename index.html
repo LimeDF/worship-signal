@@ -47,11 +47,15 @@
   <script>
     document.addEventListener('dblclick', e => e.preventDefault(), { passive:false });
 
-    // PWA: регистрация service worker (офлайн + обновления)
+    // PWA: регистрация service worker + принудительная проверка обновлений
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
-        navigator.serviceWorker.register('service-worker.js').catch(function(){});
-        let refreshing = false;
+        navigator.serviceWorker.register('service-worker.js').then(function(reg){
+          reg.update();
+          // проверять обновление каждый раз при возврате в приложение
+          document.addEventListener('visibilitychange', function(){ if(!document.hidden) reg.update(); });
+        }).catch(function(){});
+        var refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', function(){
           if(refreshing) return; refreshing = true; window.location.reload();
         });
