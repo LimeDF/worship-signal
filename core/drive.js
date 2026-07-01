@@ -13,6 +13,8 @@
 
   D.getClientId = function(){ return WS.ls.get(CID_KEY, '') || ''; };
   D.setClientId = function(v){ WS.ls.set(CID_KEY, (v || '').trim()); token = null; exp = 0; tc = null; };
+  // применить общий ID (из config.json) не сбрасывая активную сессию, если он не изменился
+  D.setClientIdShared = function(v){ v = (v || '').trim(); if(v && v !== D.getClientId()) D.setClientId(v); };
   D.isConfigured = function(){ return !!D.getClientId(); };
 
   // подгрузить скрипт Google Identity Services один раз

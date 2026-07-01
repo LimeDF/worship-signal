@@ -57,7 +57,19 @@
       body.appendChild(cid);
       body.appendChild(WS.UI.el('div',{class:'spacer'}));
       body.appendChild(WS.UI.el('div',{class:'btn-row'},
-        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ WS.Drive.setClientId(cid.value); WS.UI.toast(WS.t('saved')); }}, WS.t('save')),
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:async()=>{
+          const v = cid.value.trim();
+          WS.Drive.setClientId(v);
+          // сохранить в общий config.json — разойдётся на все устройства
+          try {
+            const items = (WS.Data.items('config') || []).slice();
+            if(items.length) items[0] = Object.assign({}, items[0], { drive_client_id:v });
+            else items.push({ id:'app', drive_client_id:v });
+            WS.UI.toast(WS.t('saving'));
+            await WS.Data.save('config', items, 'Set Drive client id');
+            WS.UI.toast(WS.t('saved'));
+          } catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message||''),'error'); }
+        }}, WS.t('save')),
         WS.UI.el('button',{class:'btn', onClick:async()=>{
           if(!WS.Drive.isConfigured()){ WS.UI.toast(WS.t('drive_need_id'),'error'); return; }
           try { await WS.Drive.connect(); WS.UI.toast(WS.t('drive_connected')); }

@@ -175,8 +175,23 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 /* ---------- Лента активности (оператор) ---------- */
 .activity{ display:flex; flex-direction:column; gap:8px; padding:12px 14px; }
 .act-item{ border-left:3px solid var(--moss); padding:8px 10px; background:var(--kombu-2); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
-.act-item.bible{ border-left-color:var(--tan); }
-.act-item.signal{ border-left-color:var(--cafe); }
+.act-item.bible{
+  border:2px solid var(--tan);
+  background:var(--tan);
+  color:#2a2113;
+  padding:16px 14px;
+  font-size:1.9em;
+  line-height:1.25;
+  font-weight:bold;
+  border-radius:var(--radius-sm);
+}
+.act-item.bible .act-meta{ color:#5a4a2a; font-size:13px; font-weight:normal; margin-top:4px; }
+.act-item.signal{
+  border-left-color:#d16748;
+  border-left-width:5px;
+  color:#e79880;
+}
+.act-item.signal .act-meta{ color:#c8846c; }
 .act-meta{ font-size:12px; color:var(--bone-dim); }
 .section-h{ font-size:13px; color:var(--bone-dim); text-transform:uppercase; letter-spacing:1px; padding:14px 14px 4px; }
 

@@ -33,6 +33,13 @@
   function signalName(a){ return { repeat:WS.t('q_repeat'), next:WS.t('q_next'), prev:WS.t('q_prev'), exit:WS.t('q_stop') }[a] || a; }
   function prev(s){ return WS.UI.preview(s, 40); }
 
+  // применить общие настройки из config.json (общий Google Client ID на все устройства)
+  function applyConfig(){
+    const c = (WS.Data.items('config') || [])[0];
+    if(c && c.drive_client_id && WS.Drive) WS.Drive.setClientIdShared(c.drive_client_id);
+  }
+  WS.App.applyConfig = applyConfig;
+
   function globalHandler(p){
     const mine = (p._dev === WS.Auth.getDeviceId());
 
@@ -44,7 +51,7 @@
     if(p.t === 'block')       WS.Log.add({ source:p._name, kind:'block',  label:'#'+(p.number||'')+' '+(p.title||'')+' — '+blockName(p.blockType) });
     else if(p.t === 'text')   WS.Log.add({ source:p._name, kind:'block',  label:WS.t('m_text')+': '+prev(p.body) });
     else if(p.t === 'media')  WS.Log.add({ source:p._name, kind:'block',  label:WS.t('m_media')+': '+(p.title||'') });
-    else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'signal', label:WS.t('projector_cleared') });
+    else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'clear',  label:WS.t('projector_cleared') });
     else if(p.t === 'signal') WS.Log.add({ source:p._name, kind:'signal', label:WS.t('signal_sent', signalName(p.action)) });
     else if(p.t === 'activity' && p.kind === 'bible')   WS.Log.add({ source:p._name, kind:'bible',   label:WS.t('m_bible')+': '+p.label });
     else if(p.t === 'activity' && p.kind === 'program') WS.Log.add({ source:p._name, kind:'program', label:p.label });
@@ -53,7 +60,10 @@
 
     // ----- чат/данные: свои пропускаем (уже применены локально) -----
     if(p.t === 'chat' && !mine && WS.Chat) WS.Chat.receive(p);
-    if(p.t === 'data' && !mine && p.collection && WS.Data) WS.Data.refresh(p.collection);
+    if(p.t === 'data' && !mine && p.collection && WS.Data){
+      WS.Data.refresh(p.collection);
+      if(p.collection === 'config') setTimeout(applyConfig, 800);   // подхватить общий Client ID
+    }
 
     if(typeof WS.state.onMessage === 'function'){ try { WS.state.onMessage(p); } catch(e){ console.error(e); } }
   }
@@ -66,6 +76,7 @@
     WS.Sync.connect();          // связь включается СРАЗУ (SSE + опрос), не ждём историю
 
     ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
+    WS.Data.load('config').then(applyConfig).catch(()=>{});   // общий Google Client ID
 
     if(!WS.Auth.getLevel()) WS.App.show('pin');
     else WS.App.show('role');
