@@ -5,7 +5,7 @@
    Установка не может сломаться (не пытаемся закэшировать всё разом).
    Внешние сервисы (ntfy/github/google) — только сеть, не трогаем.
    ============================================================ */
-const CACHE = 'worship-signal-v4';
+const CACHE = 'worship-signal-v5';
 
 // при установке — сразу берём управление, без «всё или ничего»
 self.addEventListener('install', function(e){ self.skipWaiting(); });

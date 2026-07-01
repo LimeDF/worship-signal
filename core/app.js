@@ -63,12 +63,13 @@
     WS.Sync.on(globalHandler);
     if(WS.Presence) WS.Presence.start();
 
+    WS.Sync.connect();          // связь включается СРАЗУ (SSE + опрос), не ждём историю
+
     ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
 
     if(!WS.Auth.getLevel()) WS.App.show('pin');
     else WS.App.show('role');
 
-    // восстановить слайд+лог из истории, затем включить live
-    WS.Sync.restore(function(){ WS.Sync.connect(); });
+    WS.Sync.restore();          // историю (последний слайд + лог) добираем в фоне
   };
 })();

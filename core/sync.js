@@ -33,7 +33,10 @@
   // восстановление последнего состояния из истории ntfy (только контент/лог-события)
   S.restore = async function(done){
     try {
-      const res = await fetch(base() + '/json?poll=1&since=6h', { cache:'no-store' });
+      const ctrl = new AbortController();
+      const to = setTimeout(function(){ try { ctrl.abort(); } catch(e){} }, 8000);
+      const res = await fetch(base() + '/json?poll=1&since=6h', { cache:'no-store', signal: ctrl.signal });
+      clearTimeout(to);
       if(res.ok){
         lastActivity = Date.now();
         const keep = { block:1, text:1, media:1, clear:1, signal:1, activity:1, log_clear:1 };
