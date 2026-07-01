@@ -23,6 +23,429 @@
           "translation": ""
         }
       ]
+    },
+    {
+      "id": "s_2",
+      "number": 2,
+      "title": "Слав, душе, Господа (10,000 Reasons)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "chorus",
+          "text": "Слав, душе, Господа! Слав, душе моя,\nЙого Святе Ім'я\nЯк ніколи співай, величай,\nБлагослови Господа.",
+          "translation": "Bless the Lord, O my soul, O my soul\nWorship His holy name\nSing like never before, O my soul\nI'll worship Your holy name"
+        },
+        {
+          "type": "verse",
+          "text": "Вже й сонця схід, день новий світає,\nСпівати час Твої пісні.\nПройду той шлях, що лежить переді мною,\nІ хай надвечір мій лунає спів.",
+          "translation": "The sun comes up, it's a new day dawning\nIt's time to sing Your song again\nWhatever may pass and whatever lies before me\nLet me be singing when the evening comes"
+        },
+        {
+          "type": "verse",
+          "text": "Багатий Ти на любов і ласку,\nТи добрий Бог, забарний на гнів.\nЩоб кожен день Тобі хвалу співати,\nБо десять тисяч я знайду причин.",
+          "translation": "You're rich in love and You're slow to anger\nYour name is great and Your heart is kind\nFor all Your goodness I will keep on singing\nTen thousand reasons for my heart to find"
+        },
+        {
+          "type": "verse",
+          "text": "І того дня, коли сил не стане,\nПобачу я, що мій час прийшов.\nНехай душа моя Тебе піснями славить,\nІ десять тисяч літ, і знов, і знов.",
+          "translation": "And on that day when my strength is failing\nThe end draws near and my time has come\nStill my soul will sing Your praise unending\nTen thousand years and then forevermore"
+        }
+      ]
+    },
+    {
+      "id": "s_3",
+      "number": 3,
+      "title": "У зброю небесну зодягнемось ми (The Battle Belongs to the Lord)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "У зброю небесну зодягнемось ми,\nНаш успіх в Господніх руках.\nНазавжди впадуть перед Ним сили тьми,\nНаш успіх в Господніх руках.",
+          "translation": "In heavenly armor we'll enter the land\nThe battle belongs to the Lord\nNo weapon that's fashioned against us will stand\nThe battle belongs to the Lord"
+        },
+        {
+          "type": "chorus",
+          "text": "Бо Його сила, слава,\nМудрість і влада повік! (2р.)",
+          "translation": "And we sing glory, honor,\nPower and strength to the Lord\nWe sing glory, honor,\nPower and strength to the Lord"
+        },
+        {
+          "type": "verse",
+          "text": "Коли темна сила лавиною йде,\nНаш успіх в Господніх руках.\nНаш Бог перемогу нам завжди дає,\nНаш успіх в Господніх руках.",
+          "translation": "When the power of darkness comes in like a flood\nThe battle belongs to the Lord\nHe's raised up a standard, the pow'r of His blood\nThe battle belongs to the Lord"
+        },
+        {
+          "type": "verse",
+          "text": "Як тяжко буває, здається кінець,\nНаш успіх в Господніх руках.\nРадій, бо велике спасіння твоє,\nНаш успіх в Господніх руках.",
+          "translation": "When your enemy presses in hard do not fear\nThe battle belongs to the Lord\nTake courage, my friend, your redemption is near\nThe battle belongs to the Lord"
+        }
+      ]
+    },
+    {
+      "id": "s_4",
+      "number": 4,
+      "title": "Вже надходить той день (What a Day That Will Be)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Вже надходить той день, де не буде горя вже,\nАні хмар на небесах, ані сліз на очах.\nТам спокій навіки вже в золотім краю буде.\nЩо за день, славний день той буде!",
+          "translation": "There is coming a day when no heartaches shall come\nNo more clouds in the sky, no more tears to dim the eye\nAll is peace forevermore on that happy golden shore\nWhat a day, glorious day that will be"
+        },
+        {
+          "type": "chorus",
+          "text": "Що за день то буде, як побачу я Христа.\nЯк погляну на лице, на Того, Хто спас мене.\nЯк за руку Він візьме, в Дім Отця мене введе,\nЩо за день, радісний день то буде!",
+          "translation": "What a day that will be when my Jesus I shall see\nAnd I look upon His face, the One who saved me by His grace\nWhen He takes me by the hand and leads me thro' the Promised Land\nWhat a day, glorious day that will be"
+        },
+        {
+          "type": "verse",
+          "text": "Що за день то буде, як Ісус Господь прийде,\nЩоб забрати усіх нас в ті оселі, що для нас.\nЯк на хмарах Він прийде, вірних зустріч там буде!\nЩо за день, славний день то буде!",
+          "translation": "There'll be no sorrow there, no more burdens to bear\nNo more sickness, no pain, no more parting over there\nAnd forever I will be with the One who died for me\nWhat a day, glorious day that will be"
+        }
+      ]
+    },
+    {
+      "id": "s_5",
+      "number": 5,
+      "title": "Веди мене, о Дух Святий (Lead Me On, Holy Spirit)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Веди мене, о Дух Святий,\nСповни життя, ввійди в мій дух.\nВеди мене в Твою присутність,\nТоркнись мене — Тебе потребую.",
+          "translation": "Lead me on, Holy Spirit\nFill my heart, come flood my soul\nLead me on into Your presence\nTouch me, Lord, Jesus I need You"
+        },
+        {
+          "type": "chorus",
+          "text": "Не хочу буть без Тебе,\nНе можу йти я один.\nСерце моє жде Тебе,\nДух Святий, веди мене.",
+          "translation": "I can't live without You\nI can't walk this road alone\nIn my heart I need You\nHoly One, come take my hand"
+        }
+      ]
+    },
+    {
+      "id": "s_6",
+      "number": 6,
+      "title": "Гідний Ти (You Are Worthy)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Нагороди та вінці свої віддам,\nВсі заслуги та хвалу кладу до ніг Твоїх.\nБо подібного Тобі не бачив світ,\nТи один достойний! Ти один достойний!",
+          "translation": "Any crown I've ever worn I lay it down\nAny praise I've ever gained I give it all to You\nFor there's nothing in this world that can compare\nFor You alone are worthy\nYou alone are worthy"
+        },
+        {
+          "type": "verse",
+          "text": "Бережеш усіх хто йде шляхом Твоїм,\nВічно люблячий та щедрий, завжди Той самий.\nІ за те, що збагатив життя моє,\nВіддам Тобі всю славу, віддам Тобі всю славу!",
+          "translation": "You are near to all who call upon Your name\nEver giving, ever loving, You remain the same\nFor You open up Your hand and satisfy\nI give You all the glory\nI give You all the glory"
+        },
+        {
+          "type": "chorus",
+          "text": "Гідний Ти лиш найвищої слави,\nГідний, Боже, прийняти всю хвалу та честь.\nЛиш в Тобі є життя,\nІ усім, що маю я.",
+          "translation": "You are worthy, O Lord, of all honour\nYou are worthy to receive all praise\nIn Your presence I live and with all I have to give\nI will worship You"
+        },
+        {
+          "type": "bridge",
+          "text": "Поклоняюсь я,\nШаную я,\nСлавлю я Тебе, мій Бог!",
+          "translation": "I will worship You, honour You, glorify Your holy name (4X)"
+        }
+      ]
+    },
+    {
+      "id": "s_7",
+      "number": 7,
+      "title": "Ввійду я в Святеє Святих (Take Me In)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Ввійду я в Святеє Святих,\nВвійду я через кров Христа,\nВвійду в поклоніння Тобі,\nВвійду я в славу Отця!",
+          "translation": "Take me past the outer courts\nInto the Holy Place\nPast the brazen altar\nLord I want to see your face\nPass me by the crowds of people\nAnd the Priests who sing your praise\nI hunger and thirst for your righteousness\nBut it's only found in one place"
+        },
+        {
+          "type": "chorus",
+          "text": "Поклонюсь Тобі, о мій Господь!\nПоклонюсь Тобі, о мій Господь!\nСвяте Твоє ім'я, ім'я Господь!\nСвяте Твоє ім'я, ім'я Господь!",
+          "translation": "Take me into the holy of holies\nTake me in by the blood of the lamb\nTake me into the holy of holies\nTake the coal, touch my lips, here I am"
+        }
+      ]
+    },
+    {
+      "id": "s_8",
+      "number": 8,
+      "title": "Як Господь немає (No One Like the Lord)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "chorus",
+          "text": "Гідний є Агнець,\nЩо закланий і сидить на престолі.\nЯк Господь немає.\nСтарці й створіння\nПоклоняються Йому Одному.\nЯк Господь немає.",
+          "translation": "Worthy is the Lamb\nWho was slain and seated on the throne\nThere's no one like the Lord\nElders, creatures bow\nGiving praise to Him and Him alone\nThere's no one like the Lord"
+        },
+        {
+          "type": "bridge",
+          "text": "Тебе вінчаєм Царем слави,\nТебе вінчаєм Царем слави,\nТебе вінчаєм Царем слави,\nЯк Господь немає.",
+          "translation": "And we crown You King of glory\nAnd we crown You King of glory\nAnd we crown You King of glory\nThere's no one like the Lord"
+        }
+      ]
+    },
+    {
+      "id": "s_9",
+      "number": 9,
+      "title": "Лиш в Христі надія вся (Living Hope)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Велика прірва була між нами,\nВисокі гори — немов стіна.\nВ часи нелегкі підняв я очі,\nТвоє ім'я покликав я.",
+          "translation": "How great the chasm that lay between us\nHow high the mountain I could not climb\nIn desperation I turned to Heaven\nAnd spoke Your name into the night"
+        },
+        {
+          "type": "verse",
+          "text": "Крізь темінь й холод, о, Божа ласка,\nТи спокій дав моїй душі.\nТвоя любов зігріла серце,\nНадія вся лише в Христі!",
+          "translation": "Then through the darkness Your loving kindness\nTore through the shadows of my soul\nThe work is finished, the end is written\nJesus Christ, my living hope"
+        },
+        {
+          "type": "verse",
+          "text": "Як зрозуміти велику милість?\nВмістити серцем таку любов?\nТворець Величний залишив славу,\nІ змила гріх мій пролита кров.",
+          "translation": "Who could imagine so great a mercy\nWhat heart could fathom such boundless grace\nThe God of angels stepped down from glory\nTo wear my sin and bear my shame"
+        },
+        {
+          "type": "verse",
+          "text": "Твоїм хрестом я тепер прощений,\nЯ сином став Царя Царів.\nПрекрасний Спасе, я Твій навіки,\nНадія вся лише в Христі!",
+          "translation": "The cross has spoken, I am forgiven\nThe King of kings calls me His own\nBeautiful Savior, I'm Yours forever\nJesus Christ, my living hope"
+        },
+        {
+          "type": "chorus",
+          "text": "Алелуя, мій Господь мене звільнив!\nАлелуя, смерть і пекло переміг Він.\nКайдани розірвав, нам спасіння дарував,\nЛиш в Христі надія вся!",
+          "translation": "Hallelujah, praise the One who set me free\nHallelujah, death has lost its grip on me\nYou have broken every chain\nThere's salvation in Your name\nJesus Christ, my living hope"
+        },
+        {
+          "type": "bridge",
+          "text": "Настав світанок, здійснилось Слово,\nУ мертве тіло прийшло життя.\nІ ми спасенні навіки в Ньому,\nЛиш в Христі надія вся!",
+          "translation": "Then came the morning that sealed the promise\nYour buried body began to breathe\nOut of the silence the roaring Lion\nDeclared the grave has no claim on me\nJesus, Yours is the victory"
+        }
+      ]
+    },
+    {
+      "id": "s_10",
+      "number": 10,
+      "title": "Радію я і торжествую (I Rejoice and Triumph)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Радію я і торжествую —\nСпасенний я кров'ю Христа.\nІсуса нині прославляю,\nЯк вірне Його я дитя.",
+          "translation": "I rejoice and I am triumphant —\nI am saved by the blood of Christ.\nJesus' name I now am praising,\nAs His faithful, trusted child."
+        },
+        {
+          "type": "chorus",
+          "text": "Ісус Христос мене звільнив,\nВін дав мені вічне життя,\nГріхи простив, в крові обмив,\nІ нині Його я дитя.",
+          "translation": "Jesus Christ has set me free now,\nHe has granted life eternal,\nForgave my sins and washed me in His blood,\nAnd now I am His own child."
+        },
+        {
+          "type": "verse",
+          "text": "Спасенний я, щасливий в Ісусі —\nСловами не можна сказать.\nВін в моїм серці поселився\nІ любить у нім пробувать.",
+          "translation": "I'm saved and joyful in my Jesus —\nThere are no words that can express.\nHe has settled deep within my own heart,\nAnd He loves to dwell in me."
+        },
+        {
+          "type": "verse",
+          "text": "Вінець там мій готовий, я знаю,\nУ вічних оселях Отця.\nЯ з вірою Христа чекаю,\nЩоб з Ним пробувать без кінця.",
+          "translation": "My crown is prepared, I know surely,\nIn the Father's eternal home.\nIn faith I await my own Jesus,\nThere to dwell with Him without end."
+        }
+      ]
+    },
+    {
+      "id": "s_11",
+      "number": 11,
+      "title": "На Голгофській горі (The Old Rugged Cross)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "На Голгофській горі я все бачу там хрест.\nЦе символ страждання, наруг.\nАле о цей хрест, він мені дорогий:\nНа нім Спас за весь світ постраждав.",
+          "translation": "On a hill far away stood an old rugged Cross\nThe emblem of suffering and shame\nAnd I love that old Cross where the Dearest and Best\nFor a world of lost sinners was slain."
+        },
+        {
+          "type": "chorus",
+          "text": "Не забуду ніколи той хрест:\nПрощення дарує Отець.\nМовби в серці я ношу той хрест,\nВ славний день я зміню на вінець.",
+          "translation": "So I'll cherish the old rugged Cross\nTill my trophies at last I lay down,\nI will cling to the old rugged Cross\nAnd exchange it some day for a crown."
+        },
+        {
+          "type": "verse",
+          "text": "Дуже давній той хрест, і забутий людьми,\nАле лине до Нього душа.\nБог у жертву на нім Свого Сина віддав,\nЗа нас смерть на хресті Він прийняв.",
+          "translation": "In the old rugged cross, stained with blood, so divine,\nA wondrous beauty I see,\nFor on that old rugged Cross Jesus suffered and died\nTo pardon and sanctify me."
+        },
+        {
+          "type": "verse",
+          "text": "Я все бачу той хрест, де Христос пролив кров…\nТож і я тут свій хрест понесу;\nА Спаситель мене в Дім Свій вічний прийме,\nІ вже вічно там з Ним я буду.",
+          "translation": "I still see that old Cross where my Christ shed His blood,\nSo I too here my own cross shall bear;\nAnd the Saviour shall take me to His home above,\nAnd forever with Him I'll abide."
+        }
+      ]
+    },
+    {
+      "id": "s_12",
+      "number": 12,
+      "title": "О, цей хрест (Oh the Cross)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Ти ніс на плечах Свій важкий хрест,\nСтікав Ти кров'ю до кінця.\nСльози крові, з терня вінець,\nТи все віддав, поніс наш гріх.",
+          "translation": "You carried the Cross upon Your back,\nBleeding until Your final breath.\nTears of blood, a crown of thorns,\nYou gave it all, our sins You bore."
+        },
+        {
+          "type": "verse",
+          "text": "О-о-о, о-о-о,\nНема любові більшої,\nО-о-о, о-о-о,\nНема любові більшої.",
+          "translation": "Oh-oh-oh, Oh-oh-oh\nThere is no greater love\nOh-oh-oh, Oh-oh-oh\nThere is no greater love"
+        },
+        {
+          "type": "chorus",
+          "text": "О, цей хрест — що Ти зробив,\nБільш ніж досить, більш ніж досить.\nО, цей хрест — що Ти зробив,\nСила крові Твоєї — більш ніж досить.",
+          "translation": "Oh, the Cross, what You've done,\nIt was more than enough, more than enough,\nOh, the Cross, what You've done,\nThe power of Your blood was more than enough."
+        },
+        {
+          "type": "verse",
+          "text": "Та жертва — історію змінила,\nЦвяхи в руках Твоїх — в руках, що спасли мене.\nГроб запечатано, смерть жало втратила,\nЯк Лев у перемозі заричав.",
+          "translation": "The sacrifice that changed history,\nThe nails in Your hands, the hands that saved me.\nThe grave was sealed, death lost its sting,\nAs the Lion roared in victory."
+        },
+        {
+          "type": "bridge",
+          "text": "Дякую Тобі —\nЗа хліб Свого тіла, що Ти переламав,\nЗа вино Своєї крові, що Ти пролив.\nДякую Тобі —\nСерце моє співатиме повік.",
+          "translation": "Thank You\nFor breaking the bread of Your body,\nFor spilling the wine of Your blood.\nThank You,\nMy heart will sing forever."
+        }
+      ]
+    },
+    {
+      "id": "s_13",
+      "number": 13,
+      "title": "Веди мене до хреста (Lead Me to the Cross)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Спасе, прийшов я, втиш мою душу, пам'ятай —\nПагорб спасіння, де кров пролилася Твоя\nЗа викуп мій.",
+          "translation": "Saviour I come, quiet my soul, remember\nRedemption's hill, where Your blood was spilled\nFor my ransom."
+        },
+        {
+          "type": "verse",
+          "text": "Все, що раніш я цінував,\nВсе я рахую за втрату.",
+          "translation": "Everything I once held dear,\nI count it all as loss."
+        },
+        {
+          "type": "chorus",
+          "text": "Веди до хреста, де любов Твоя лилась,\nПриведи до колін, я схиляюсь, Господь.\nЗвільни мене від себе — я Твій,\nО, веди, веди мене до хреста.",
+          "translation": "Lead me to the cross, where Your love poured out\nBring me to my knees, Lord I lay me down\nRid me of myself, I belong to You\nO lead me, lead me to the cross."
+        },
+        {
+          "type": "verse",
+          "text": "Ти був, як я, — спокушений, людський,\nСлово плоттю стало, мій гріх і смерть поніс,\nТепер Ти воскрес.",
+          "translation": "You were as I, tempted and tried, human,\nThe word became flesh, bore my sin and death,\nNow You're risen."
+        },
+        {
+          "type": "bridge",
+          "text": "До Твого серця, до Твого серця,\nВеди мене до Твого серця,\nВеди до Твого серця.",
+          "translation": "To Your heart, to Your heart,\nLead me to Your heart,\nLead me to Your heart."
+        }
+      ]
+    },
+    {
+      "id": "s_14",
+      "number": 14,
+      "title": "Час, Господа прославляти (Come Now Is The Time To Worship)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "chorus",
+          "text": "Час, Господа прославляти.\nЧас, нам принести хвалу сердець.\nЧас, славу і честь воздати.\nЧас, встать перед Богом так як є. Час!",
+          "translation": "Come now is the time to worship\nCome now is the time to give your heart\nCome just as you are to worship\nCome just as you are before your God\nCome"
+        },
+        {
+          "type": "verse",
+          "text": "День прийде і визнає кожен язик,\nІ кожен на коліна впаде\nІ більша нагорода чекає тих,\nХто вибрали Тебе.",
+          "translation": "One day every tongue will confess You are God\nOne day every knee will bow\nStill the greatest treasure remains for those\nWho gladly choose You now"
+        },
+        {
+          "type": "verse",
+          "text": "Час, Господа всім шукати.\nЧас, в Божу присутність входить нам.\nЧас, про Бога світ навчати.\nЧас, сіяти слово Правди там. Час!\nЧас, Бога відображати.",
+          "translation": "Willingly we choose to surrender our lives\nWillingly our knees will bow\nWith all our heart soul mind and strength\nWe gladly choose You now"
+        },
+        {
+          "type": "verse",
+          "text": "Час, жертву хвали принести в храм.\nЧас, ближніх благословляти.\nЧас, світлом і сіллю бути нам. Час!",
+          "translation": "Come\nCome just as you are\nCome\nCome"
+        }
+      ]
+    },
+    {
+      "id": "s_15",
+      "number": 15,
+      "title": "Алілуя! Наш Господь Всемогутній (Agnus Dei)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Алілуя! Алілуя! Наш Господь Всемогутній Бог!\nАлілуя! Алілуя! Наш Господь Всемогутній Бог!\nАлілуя!",
+          "translation": "Alleluia\nAlleluia\nFor the Lord God Almighty reigns\nAllelui\nAlleluia\nFor the Lord God Almighty reigns\nAlleluia"
+        },
+        {
+          "type": "chorus",
+          "text": "Святий! Святий!\nТи Господь Бог Всемогутній!\nДостоїн Ти хвали! Достоїн Ти хвали!\nТи є святий!\nСвятий! Святий!\nТи Господь Бог Всемогутній!\nДостоїн Ти хвали! Достоїн Ти хвали!\nАмінь!",
+          "translation": "Holy holy\nAre You Lord God Almighty\nWorthy is the Lamb worthy is the Lamb\nYou are holy holy\nAre You Lord God Almighty\nWorthy is the Lamb worthy is the Lamb\nAmen"
+        }
+      ]
+    },
+    {
+      "id": "s_16",
+      "number": 16,
+      "title": "Христу лине слава (To God Be The Glory)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Христу лине слава, Бог нас оправдав,\nТак світ полюбив Він, що Сина нам дав.\nВін кров'ю Своєю гріхи нам омив,\nІ всім нам двері життя навік відкрив.",
+          "translation": "To God be the glory, great things He hath done\nSo loved He the world that He gave us His Son\nWho yielded His life an atonement for sin\nAnd opened the life gate that all may go in"
+        },
+        {
+          "type": "chorus",
+          "text": "Слав Христа, слав Христа,\nСлав Його, вся земля,\nСлав Христа, слав Христа,\nСлавте, всі племена!\nО, друже, до Спаса ти прийди,\nІ дай Йому славу за всі доброти.",
+          "translation": "Praise the Lord, praise the Lord\nLet the earth hear His voice\nPraise the Lord, praise the Lord\nLet the people rejoice\nO come to the Father through Jesus the Son\nAnd give Him the glory, great things He hath done"
+        },
+        {
+          "type": "verse",
+          "text": "Прощення дарується Богом тому,\nХто вірить у смерть і спасіння Христа.\nІ найгірший грішник, як вірить Йому,\nОмитий, спасенний у крові Христа.",
+          "translation": "O perfect redemption, the purchase of blood\nTo ev'ry believer the promise of God\nThe vilest offender who truly believes\nThat moment from Jesus a pardon receives"
+        },
+        {
+          "type": "verse",
+          "text": "Бог нас викупив і нам мир дарував,\nВін радість по вірі в Ісуса нам дав;\nКоли Він візьме нас до Свого Отця,\nТоді ми всі разом прославим Христа.",
+          "translation": "Great things He hath taught us, great things He hath done\nAnd great our rejoicing through Jesus the Son\nBut purer, and higher, and greater will be\nOur wonder, our transport, when Jesus we see"
+        }
+      ]
+    },
+    {
+      "id": "s_17",
+      "number": 17,
+      "title": "Ты зажигаешь в небе звезды (You Light the Stars)",
+      "show_translation": true,
+      "blocks": [
+        {
+          "type": "verse",
+          "text": "Ты зажигаешь в небе звезды им даруешь яркий свет\nТы называешь поименно миллионы из планет\nТы правишь севером и югом, и вселенной всей\nИ я принадлежу Тебе, мой Господь. И я принадлежу Тебе.",
+          "translation": "You light the stars in the sky, bestowing upon them brilliant light;\nYou call the millions of planets each by name;\nYou rule the North and the South, and the entire universe;\nAnd I belong to You, my Lord. And I belong to You."
+        },
+        {
+          "type": "chorus",
+          "text": "Я Тебя благодарю, за святую кровь Твою\nТы достоин славы всей. Бог богов и Царь царей!",
+          "translation": "I thank You for Your holy blood;\nYou are worthy of all glory - God of gods and King of kings!"
+        },
+        {
+          "type": "verse",
+          "text": "По Твоей воле, Всемогущий, существуют Небеса.\nЯ знаю этим миром правит сильная рука,\nЧто близко Ты со мной и рядом пастырь и мой друг,\nТы Царь и я Тебе пою Аллилуйя! Ты Царь и я Тебе пою.",
+          "translation": "By Your will, Almighty One, the heavens exist.\nI know a mighty hand governs this world,\nThat You are near - my Shepherd and my Friend;\nYou are King, and I sing Hallelujah to You! You are King, and I sing to You."
+        },
+        {
+          "type": "chorus",
+          "text": "Небо и Земля Твоя, громко славлю я Тебя,\nТы Спаситель всех людей, Бог богов и Царь царей.",
+          "translation": "Heaven and Earth are Yours; loudly I praise You;\nYou are the Savior of all people - God of gods and King of kings."
+        }
+      ]
     }
   ]
 }
