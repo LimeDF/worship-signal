@@ -75,6 +75,7 @@
       drive_parse_fail:'Не розпізнав посилання Drive', file_default:'Файл',
       bible_not_loaded:'Книги не завантажено', back_books:'← Книги', back_chapters:'← Розділи',
       search_book_ph:'Пошук книги…', bible_load_fail:'Не вдалося завантажити текст (перевірте інтернет)',
+      bible_to_screen:'На екран', bible_to_operator:'Оператору', bible_two_lang:'Дві мови (укр+англ)',
       sent_operator:'Надіслано оператору: {0}',
       // operator
       operator_title:'Оператор', transmission:'⏻ Трансляція', activity_log:'Лог активності',
@@ -165,6 +166,7 @@
       drive_parse_fail:'Could not recognize the Drive link', file_default:'File',
       bible_not_loaded:'Books not loaded', back_books:'← Books', back_chapters:'← Chapters',
       search_book_ph:'Search book…', bible_load_fail:'Could not load text (check internet)',
+      bible_to_screen:'To screen', bible_to_operator:'To operator', bible_two_lang:'Two languages (UA+EN)',
       sent_operator:'Sent to operator: {0}',
       operator_title:'Operator', transmission:'⏻ Project', activity_log:'Activity log',
       clear_log:'Clear log', clear_log_q:'Clear the log for all operators?', chat_section:'Chat', empty_log:'Empty for now',

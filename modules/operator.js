@@ -96,10 +96,27 @@
         }
         return;
       }
+      // ── Библия: текст (при двух языках — сплит), ссылка тонким шрифтом внизу справа ──
+      if(d.t === 'bible'){
+        const main = WS.UI.el('div');
+        Object.assign(main.style, { position:'absolute', left:'0', top:'0', right:'0', bottom:'0', display:'flex', flexDirection:'column', boxSizing:'border-box', padding:'2% 3% 7% 3%' });
+        stageEl.appendChild(main);
+        if(d.ref) stageEl.appendChild(WS.UI.el('div',{class:'proj-ref'}, d.ref));
+        if(d.bilingual && d.text_en){
+          const top = WS.UI.el('div',{class:'proj-half'}); const bot = WS.UI.el('div',{class:'proj-half'});
+          const t1 = WS.UI.el('div',{class:'proj-text'}, d.text || ''); const t2 = WS.UI.el('div',{class:'proj-text'}, d.text_en || '');
+          top.appendChild(t1); bot.appendChild(t2); main.appendChild(top); main.appendChild(bot);
+          requestAnimationFrame(() => { WS.UI.fitText(t1, top, 12, 150); WS.UI.fitText(t2, bot, 12, 150); });
+        } else {
+          const box = WS.UI.el('div',{class:'proj-half'}); const t = WS.UI.el('div',{class:'proj-text'}, d.text || '');
+          box.appendChild(t); main.appendChild(box);
+          requestAnimationFrame(() => WS.UI.fitText(t, box, 16, 240));
+        }
+        return;
+      }
       let content = '';
       if(d.t === 'block'){ content = d.text || ''; if(d.showTranslation && d.translation) content += '\n\n' + d.translation; }
       else if(d.t === 'text'){ content = d.body || ''; }
-      else if(d.t === 'bible'){ content = (d.ref ? d.ref + '\n\n' : '') + (d.text || ''); }
       const textEl = WS.UI.el('div',{class:'proj-text'}, content);
       stageEl.appendChild(textEl);
       requestAnimationFrame(() => WS.UI.fitText(textEl, stageEl, 16, 260));
