@@ -1,29 +1,6 @@
 {
   "schema_version": 1,
   "items": [
-    {
-      "id": "m_sample",
-      "title": "Пример видео (замените drive_id)",
-      "type": "video",
-      "drive_id": ""
-    },
-    {
-      "id": "imr2o3jupetvm",
-      "title": "IMG-d70278bd4cdb1a40a8207a60e05d84a6-V.jpg",
-      "type": "image",
-      "drive_id": "13wAVGR72xBhBjzQdoD7Pc4j9YU-hVc-b"
-    },
-    {
-      "id": "imr2o7fl9m4jy",
-      "title": "Screenshot_20260701-184043.png",
-      "type": "image",
-      "drive_id": "15Pf-UxpXuI2n9VVzI8uKBa53r1wUHkzT"
-    },
-    {
-      "id": "imr2oagngfpan",
-      "title": "rhufnkj",
-      "type": "image",
-      "drive_id": "10haIxYzfaHDumNcsDqLc9eqYHNRnWSbE"
-    }
+    { "id": "m_sample", "title": "Пример видео (замените drive_id)", "type": "video", "drive_id": "" }
   ]
 }

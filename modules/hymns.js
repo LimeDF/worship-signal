@@ -90,15 +90,34 @@
 
       const items = sortItems(WS.Data.items(tab));
       if(!items.length){ listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('list_empty_add'))); return; }
-      items.forEach(it => {
+
+      // поиск по номеру и названию (фильтрует вживую, без перерисовки)
+      const search = WS.UI.el('input',{class:'input', type:'search', placeholder:WS.t('search_ph'), style:{marginBottom:'12px'}});
+      listWrap.appendChild(search);
+      const rowsWrap = WS.UI.el('div', null);
+      listWrap.appendChild(rowsWrap);
+      const noRes = WS.UI.el('div',{class:'empty'}, WS.t('nothing_found'));
+      noRes.style.display = 'none'; listWrap.appendChild(noRes);
+
+      const rows = items.map(it => {
         const first = (it.blocks && it.blocks[0]) ? it.blocks[0].text : '';
-        listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>openBlocks(it)},
+        const row = WS.UI.el('div',{class:'row', onClick:()=>openBlocks(it)},
           WS.UI.el('div',{class:'num'}, '#' + (it.number ?? '—')),
           WS.UI.el('div',{class:'main'},
             WS.UI.el('div',{class:'ttl'}, it.title || WS.t('untitled')),
             WS.UI.el('div',{class:'prev'}, WS.UI.preview(first, 60))
           )
-        ));
+        );
+        row._hay = (String(it.number ?? '') + ' ' + (it.title || '')).toLowerCase();
+        rowsWrap.appendChild(row);
+        return row;
+      });
+
+      search.addEventListener('input', () => {
+        const q = search.value.trim().toLowerCase();
+        let shown = 0;
+        rows.forEach(r => { const ok = !q || r._hay.indexOf(q) !== -1; r.style.display = ok ? '' : 'none'; if(ok) shown++; });
+        noRes.style.display = shown ? 'none' : '';
       });
     }
 
@@ -126,6 +145,38 @@
 
       const transChk = WS.UI.el('input',{type:'checkbox'}); transChk.checked = !!model.show_translation;
       listWrap.appendChild(WS.UI.el('label',{style:{display:'flex', alignItems:'center', gap:'10px', margin:'16px 0'}}, transChk, WS.UI.el('span', null, WS.t('show_tr_label'))));
+
+      // ── Импорт целого текста с авто-разбивкой ──
+      const importPanel = WS.UI.el('div',{class:'card', style:{display:'none'}});
+      const impText = WS.UI.el('textarea',{class:'input', placeholder:WS.t('import_text_ph'), style:{minHeight:'120px'}});
+      const impTr   = WS.UI.el('textarea',{class:'input', placeholder:WS.t('import_tr_ph'), style:{minHeight:'90px', marginTop:'8px'}});
+      importPanel.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'8px'}}, WS.t('import_hint')));
+      importPanel.appendChild(impText);
+      importPanel.appendChild(impTr);
+      importPanel.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'10px'}},
+        WS.UI.el('button',{class:'btn', onClick:()=>{
+          const blocks = splitLyrics(impText.value);
+          if(!blocks.length){ WS.UI.toast(WS.t('import_empty'),'error'); return; }
+          const trBlocks = impTr.value.trim() ? splitLyrics(impTr.value) : [];
+          if(trBlocks.length){
+            transChk.checked = true;
+            blocks.forEach((b,i) => { b.translation = trBlocks[i] ? trBlocks[i].text : ''; });
+          }
+          model.blocks = blocks;
+          importPanel.style.display = 'none'; impBtn.textContent = WS.t('import_whole');
+          drawBlocks();
+          WS.UI.toast(WS.t('import_done', blocks.length));
+        }}, WS.t('split_fill')),
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ importPanel.style.display='none'; impBtn.textContent = WS.t('import_whole'); }}, WS.t('cancel'))
+      ));
+
+      const impBtn = WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:()=>{
+        const open = importPanel.style.display === 'none';
+        importPanel.style.display = open ? '' : 'none';
+        impBtn.textContent = open ? WS.t('collapse') : WS.t('import_whole');
+      }}, WS.t('import_whole'));
+      listWrap.appendChild(impBtn);
+      listWrap.appendChild(importPanel);
 
       const blocksWrap = WS.UI.el('div', null);
       listWrap.appendChild(blocksWrap);
@@ -188,4 +239,50 @@
   function swap(a,i,j){ const t = a[i]; a[i] = a[j]; a[j] = t; }
   function clampNum(v){ let n = parseInt(v,10); if(isNaN(n)) return ''; return Math.max(WS.config.PSALM_NUM_MIN, Math.min(WS.config.PSALM_NUM_MAX, n)); }
   function sortItems(arr){ return arr.slice().sort((a,b) => (a.number||0) - (b.number||0)); }
+
+  // Авто-разбивка вставленного текста на блоки (куплет/приспів/міст) ≈ по 4 строки.
+  function splitLyrics(raw){
+    const text = String(raw || '').replace(/\r\n?/g,'\n').trim();
+    if(!text) return [];
+    const KW = /(приспів|приспев|chorus|refrain|міст|мост|bridge|бридж|брідж|куплет|verse|стих|строфа|pre-?chorus|програш|проигрыш|intro|вступ|ending|кінцівка|coda|коду)/i;
+    function typeFor(s){
+      if(/приспів|приспев|chorus|refrain/i.test(s)) return 'chorus';
+      if(/міст|мост|bridge|бридж|брідж/i.test(s)) return 'bridge';
+      return 'verse';
+    }
+    // разбить на строфы по пустым строкам
+    const stanzas = text.split(/\n\s*\n+/);
+    const blocks = [];
+    stanzas.forEach(st => {
+      let lines = st.split('\n').map(l => l.trim()).filter(l => l.length);
+      if(!lines.length) return;
+      let type = 'verse';
+      const head = lines[0];
+      const isHeader = KW.test(head) && (head.length <= 30 || head.indexOf('[') !== -1 || head.indexOf('/') !== -1);
+      if(isHeader){
+        type = typeFor(head);
+        const colon = head.indexOf(':');
+        const after = colon >= 0 ? head.slice(colon+1).trim() : '';
+        if(after) lines[0] = after; else lines = lines.slice(1);
+      }
+      if(!lines.length) return;
+      chunkEven(lines, 4).forEach(group => blocks.push({ type:type, text:group.join('\n'), translation:'' }));
+    });
+    return blocks;
+  }
+
+  // поделить массив строк на почти равные группы ≤ target (6→3+3, 5→3+2, 7→4+3 …)
+  function chunkEven(arr, target){
+    const n = arr.length;
+    if(n <= target) return [arr];
+    const chunks = Math.ceil(n / target);
+    const base = Math.floor(n / chunks);
+    let rem = n % chunks, idx = 0;
+    const out = [];
+    for(let c = 0; c < chunks; c++){
+      const size = base + (rem > 0 ? 1 : 0); if(rem > 0) rem--;
+      out.push(arr.slice(idx, idx + size)); idx += size;
+    }
+    return out;
+  }
 })();

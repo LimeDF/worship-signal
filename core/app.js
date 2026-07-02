@@ -44,7 +44,7 @@
     const mine = (p._dev === WS.Auth.getDeviceId());
 
     // ----- ПРОЕКТОР (одинаково на всех устройствах) -----
-    if(p.t === 'block' || p.t === 'text' || p.t === 'media') WS.Projector.set(p);
+    if(p.t === 'block' || p.t === 'text' || p.t === 'media' || p.t === 'bible') WS.Projector.set(p);
     else if(p.t === 'clear') WS.Projector.set({ t:'clear' });
 
     // ----- ЛОГ (строится из потока, свои события тоже) -----
@@ -54,6 +54,7 @@
     else if(p.t === 'clear')  WS.Log.add({ source:p._name, kind:'clear',  label:WS.t('projector_cleared') });
     else if(p.t === 'signal') WS.Log.add({ source:p._name, kind:'signal', label:WS.t('signal_sent', signalName(p.action)) });
     else if(p.t === 'activity' && p.kind === 'bible')   WS.Log.add({ source:p._name, kind:'bible',   label:WS.t('m_bible')+': '+p.label });
+    else if(p.t === 'bible')  WS.Log.add({ source:p._name, kind:'bible', label:(p.ref || '') + (p.text ? ' — ' + prev(p.text) : '') });
     else if(p.t === 'activity' && p.kind === 'program') WS.Log.add({ source:p._name, kind:'program', label:p.label });
 
     if(p.t === 'log_clear') WS.Log.clear(true);

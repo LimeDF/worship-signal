@@ -44,13 +44,13 @@
       WS.UI.el('button',{class:'icon-btn', title:WS.t('clear_log'), onClick:()=>{ WS.UI.confirm(WS.t('clear_log_q'), ()=>WS.Log.clear()); }},'🗑')
     );
     screen.appendChild(logHead);
-    const logWrap = WS.UI.el('div',{class:'activity'});
+    const logWrap = WS.UI.el('div',{class:'activity scroll', style:{flex:'1', minHeight:'30vh'}});
     screen.appendChild(logWrap);
     renderLog(logWrap);
     WS.Log.onAdd(() => { if(WS.state.screen === 'operator' && mode() === 'normal') renderLog(logWrap); });
 
-    screen.appendChild(WS.UI.el('div',{class:'section-h'}, WS.t('chat_section')));
-    const chatBox = WS.UI.el('div',{class:'col', style:{height:'38vh', borderTop:'1px solid var(--line)'}});
+    screen.appendChild(WS.UI.el('div',{class:'section-h', style:{flex:'none'}}, WS.t('chat_section')));
+    const chatBox = WS.UI.el('div',{class:'col', style:{height:'34vh', flex:'none', borderTop:'1px solid var(--line)'}});
     chatBox.appendChild(WS.Chat.widget(true));
     screen.appendChild(chatBox);
 
@@ -99,6 +99,7 @@
       let content = '';
       if(d.t === 'block'){ content = d.text || ''; if(d.showTranslation && d.translation) content += '\n\n' + d.translation; }
       else if(d.t === 'text'){ content = d.body || ''; }
+      else if(d.t === 'bible'){ content = (d.ref ? d.ref + '\n\n' : '') + (d.text || ''); }
       const textEl = WS.UI.el('div',{class:'proj-text'}, content);
       stageEl.appendChild(textEl);
       requestAnimationFrame(() => WS.UI.fitText(textEl, stageEl, 16, 260));

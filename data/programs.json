@@ -6,56 +6,11 @@
       "title": "Воскресное служение (пример)",
       "date": "2026-07-05",
       "items": [
-        {
-          "type": "note",
-          "text": "Начало · Молитва"
-        },
-        {
-          "type": "psalm",
-          "ref_id": "p_sample_23",
-          "number": 23,
-          "title": "Господь — мій Пастир"
-        },
-        {
-          "type": "text",
-          "ref_id": "t_welcome",
-          "title": "Вітання"
-        },
-        {
-          "type": "note",
-          "text": "Проповедь"
-        },
-        {
-          "type": "psalm",
-          "ref_id": "p_sample_362",
-          "number": 362,
-          "title": "Дивна благодать"
-        }
-      ]
-    },
-    {
-      "id": "imr2ojf1bf4v6",
-      "title": "Friday",
-      "date": "2026-07-03",
-      "items": [
-        {
-          "type": "psalm",
-          "ref_id": "p_1",
-          "number": 1,
-          "title": "Отче наш"
-        },
-        {
-          "type": "psalm",
-          "ref_id": "p_2",
-          "number": 2,
-          "title": "Отче небесний"
-        },
-        {
-          "type": "psalm",
-          "ref_id": "p_3",
-          "number": 3,
-          "title": "О, Боже, вчуй мене"
-        }
+        { "type": "note", "text": "Начало · Молитва" },
+        { "type": "psalm", "ref_id": "p_sample_23", "number": 23, "title": "Господь — мій Пастир" },
+        { "type": "text", "ref_id": "t_welcome", "title": "Вітання" },
+        { "type": "note", "text": "Проповедь" },
+        { "type": "psalm", "ref_id": "p_sample_362", "number": 362, "title": "Дивна благодать" }
       ]
     }
   ]

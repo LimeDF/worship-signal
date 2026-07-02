@@ -2,7 +2,7 @@
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
 
-  let bibleLang = WS.ls.get('bible_lang','ua');
+  let bibleCode = WS.ls.get('bible_code','UBIO');
 
   WS.App.screens.chair = function(root, params){
     const view = (params && params.view) || 'menu';
@@ -213,21 +213,32 @@
 
   function optEl(val, label, cur){ const o = document.createElement('option'); o.value = val; o.textContent = label; if(cur === val) o.selected = true; return o; }
 
-  // БИБЛИЯ
+  // БИБЛИЯ — реальный текст (WEB + Огієнко тянутся с bolls и кэшируются)
   function renderBible(wrap){
     WS.UI.clear(wrap);
-    wrap.appendChild(WS.UI.el('div',{class:'tabs', style:{padding:'0 0 12px'}},
-      WS.UI.el('button',{class:'tab'+(bibleLang==='ua'?' on':''), onClick:()=>{ bibleLang='ua'; WS.ls.set('bible_lang','ua'); renderBible(wrap); }},'Українська'),
-      WS.UI.el('button',{class:'tab'+(bibleLang==='en'?' on':''), onClick:()=>{ bibleLang='en'; WS.ls.set('bible_lang','en'); renderBible(wrap); }},'English')
-    ));
+    const tabs = WS.UI.el('div',{class:'tabs', style:{padding:'0 0 12px', flexWrap:'wrap'}});
+    WS.Bible.translations.forEach(tr => {
+      tabs.appendChild(WS.UI.el('button',{class:'tab'+(bibleCode===tr.code?' on':''), onClick:()=>{ bibleCode=tr.code; WS.ls.set('bible_code',tr.code); renderBible(wrap); }}, tr.name));
+    });
+    wrap.appendChild(tabs);
+
     const books = WS.Data.items('bible');
     if(!books.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_not_loaded'))); return; }
+    const lang = WS.Bible.get(bibleCode).lang;
+    const bookName = b => lang==='en' ? b.en : b.ua;
     const listWrap = WS.UI.el('div', null); wrap.appendChild(listWrap);
-    const bookName = b => bibleLang==='en' ? b.en : b.ua;
 
     function showBooks(){
       WS.UI.clear(listWrap);
-      books.forEach(b => listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>showChapters(b)}, WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, bookName(b))))));
+      const search = WS.UI.el('input',{class:'input', type:'search', placeholder:WS.t('search_book_ph'), style:{marginBottom:'12px'}});
+      listWrap.appendChild(search);
+      const rowsWrap = WS.UI.el('div', null); listWrap.appendChild(rowsWrap);
+      const rows = books.map(b => {
+        const row = WS.UI.el('div',{class:'row', onClick:()=>showChapters(b)}, WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, bookName(b))));
+        row._hay = (bookName(b) || '').toLowerCase();
+        rowsWrap.appendChild(row); return row;
+      });
+      search.addEventListener('input', ()=>{ const q = search.value.trim().toLowerCase(); rows.forEach(r => r.style.display = (!q || r._hay.indexOf(q) !== -1) ? '' : 'none'); });
     }
     function showChapters(b){
       WS.UI.clear(listWrap);
@@ -238,17 +249,28 @@
       listWrap.appendChild(grid);
     }
     function showVerses(b, c){
+      const bookNum = books.indexOf(b) + 1;
       WS.UI.clear(listWrap);
       listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:()=>showChapters(b)}, WS.t('back_chapters')));
       listWrap.appendChild(WS.UI.el('div',{style:{fontWeight:'bold', marginBottom:'10px'}}, bookName(b) + ' ' + c));
-      const grid = WS.UI.el('div',{style:{display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:'8px'}});
-      for(let v=1;v<=60;v++) grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>sendVerse(b,c,v)}, String(v)));
-      listWrap.appendChild(grid);
+      const status = WS.UI.el('div',{class:'empty'}, WS.t('loading')); listWrap.appendChild(status);
+      WS.Bible.getChapter(bibleCode, bookNum, c).then(verses => {
+        if(WS.state.screen !== 'chair') return;
+        status.remove();
+        if(!verses.length){ listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_load_fail'))); return; }
+        verses.forEach(vo => {
+          listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>sendVerse(b, c, vo.verse, vo.text)},
+            WS.UI.el('div',{class:'num'}, String(vo.verse)),
+            WS.UI.el('div',{class:'main'}, WS.UI.el('div',{style:{whiteSpace:'pre-wrap'}}, WS.UI.preview(vo.text, 100)))
+          ));
+        });
+      }).catch(() => { if(WS.state.screen !== 'chair') return; status.remove(); listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_load_fail'))); });
     }
-    function sendVerse(b, c, v){
-      const refUa = b.ua + ' ' + c + ':' + v, refEn = b.en + ' ' + c + ':' + v;
-      WS.Sync.send({ t:'activity', kind:'bible', label: refUa + '  /  ' + refEn });
-      WS.UI.toast(WS.t('sent_operator', bibleLang==='en'?refEn:refUa));
+    function sendVerse(b, c, v, text){
+      const ref = bookName(b) + ' ' + c + ':' + v;
+      const payload = { t:'bible', ref: ref, text: text || '' };
+      WS.Sync.send(payload); WS.Projector.set(payload);
+      WS.UI.toast(WS.t('sent_projector'));
     }
     showBooks();
   }

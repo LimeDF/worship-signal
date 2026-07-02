@@ -1,9 +1,6 @@
 {
   "schema_version": 1,
   "items": [
-    {
-      "id": "app",
-      "drive_client_id": "958154463201-m7416d7vgcq4mud5pspou4qmm2tr6cgl.apps.googleusercontent.com"
-    }
+    { "id": "app", "drive_client_id": "" }
   ]
 }
