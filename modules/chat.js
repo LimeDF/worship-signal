@@ -28,7 +28,7 @@
   }
 
   C.widget = function(canWrite){
-    const wrap = WS.UI.el('div',{class:'col grow'});
+    const wrap = WS.UI.el('div',{class:'col grow', style:{minHeight:'0'}});
     const list = WS.UI.el('div',{class:'chat-list'});
     liveListEl = list;
     const myId = WS.Auth.getDeviceId();

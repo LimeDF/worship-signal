@@ -164,22 +164,23 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .proj-half{ flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; min-height:0; padding:2.5vmin 0; }
 .proj-half + .proj-half{ border-top:2px solid rgba(255,255,255,0.28); margin-top:1vmin; padding-top:3.5vmin; }
 /* Библия — режим чтения (лента) */
-.rd-card{ padding:14px 16px; border-radius:10px; margin:10px 0; background:var(--kombu-2); color:var(--bone); }
-.rd-card.dim{ opacity:0.42; }
-.rd-card.active{ border:2px solid var(--tan); background:var(--tan); color:#2a2113; font-size:1.25em; }
-.rd-vnum{ font-weight:bold; opacity:0.75; margin-right:8px; }
+.rd-actions{ position:sticky; top:0; z-index:6; display:flex; gap:8px; padding:8px 0 10px; background:var(--kombu); }
+.mv-bar{ position:sticky; top:0; z-index:6; display:flex; gap:8px; padding:8px 0; background:var(--kombu); }
+.rd-card{ padding:12px 14px; border-radius:10px; margin:8px 0; background:var(--kombu-2); color:var(--bone); font-size:0.9em; opacity:0.5; cursor:pointer; transition:opacity .22s ease, font-size .22s ease, background .22s ease, box-shadow .22s ease; }
+.rd-card.active{ opacity:1; background:var(--tan); color:#2a2113; font-size:1.32em; border:2px solid var(--moss); box-shadow:0 3px 14px rgba(0,0,0,0.35); }
+.rd-vnum{ font-weight:bold; opacity:0.7; margin-right:8px; }
 /* Follow-along (зал) */
 .watch-screen{ position:fixed; inset:0; background:#000; color:#fff; display:flex; flex-direction:column; z-index:50; }
 .watch-bar{ display:flex; flex-wrap:wrap; gap:6px; padding:6px 8px; background:rgba(255,255,255,0.07); flex:none; }
 .watch-btn{ background:rgba(255,255,255,0.14); color:#fff; border:none; border-radius:6px; padding:8px 11px; font-size:14px; cursor:pointer; }
-.watch-content{ flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; }
+.watch-content{ flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; position:relative; }
 .watch-box{ width:100%; padding:5vw 4vw; box-sizing:border-box; text-align:center; }
 .watch-text{ white-space:pre-wrap; line-height:1.35; }
 .watch-div{ height:2px; background:rgba(255,255,255,0.28); margin:4vw auto; width:72%; }
 .watch-ref{ margin-top:3.5vw; color:rgba(255,255,255,0.72); font-style:italic; font-size:3.4vw; }
 .watch-wait{ color:rgba(255,255,255,0.4); font-size:5vw; text-align:center; padding:8vw; }
 .watch-media{ border:none; width:100%; height:100%; min-height:80vh; }
-.vchk{ cursor:pointer; font-size:20px; line-height:1; opacity:0.65; margin-right:8px; user-select:none; align-self:center; }
+.vchk{ cursor:pointer; font-size:22px; line-height:1; opacity:0.7; margin-right:10px; user-select:none; align-self:center; min-width:26px; text-align:center; }
 .row.sel{ outline:2px solid var(--tan); outline-offset:-2px; }
 .row.bverse .main{ padding:2px 0; }
 .proj-exit{ position:fixed; top:8px; right:8px; z-index:10; width:34px; height:34px; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); border-radius:6px; font-size:18px; }
@@ -240,3 +241,10 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
   .print-page.brk{ page-break-before:always; }
   @page { margin:2cm; }
 }
+
+/* Сцена — выезжающая панель (вариант 2) */
+.stage-fab{ position:fixed; right:14px; bottom:14px; z-index:40; padding:12px 18px; border-radius:24px; background:var(--moss); color:#1c2114; font-weight:bold; font-size:15px; border:none; box-shadow:0 3px 12px rgba(0,0,0,0.45); cursor:pointer; }
+.stage-panel{ position:fixed; left:0; right:0; bottom:0; z-index:41; background:var(--cafe); border-top-left-radius:18px; border-top-right-radius:18px; padding:8px 16px 20px; box-shadow:0 -4px 22px rgba(0,0,0,0.55); transform:translateY(112%); transition:transform .26s ease; }
+.stage-panel.open{ transform:translateY(0); }
+.stage-handle{ width:44px; height:5px; border-radius:3px; background:rgba(255,255,255,0.35); margin:6px auto 10px; cursor:pointer; }
+.stage-ptitle{ text-align:center; font-size:13px; color:var(--bone-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }

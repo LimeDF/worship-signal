@@ -55,40 +55,44 @@
     fmt: fmt,
     render(container, d){
       container.innerHTML = '';
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vmin;text-align:center;padding:5vmin;box-sizing:border-box;';
-      container.appendChild(wrap);
+      const root = document.createElement('div');
+      root.style.cssText = 'position:absolute;inset:0;overflow:hidden;background:#000;';
+      container.appendChild(root);
 
       if(d.logo){
         const img = document.createElement('img');
         img.src = logoUrl(d.logo);
-        img.style.cssText = 'max-width:70%;max-height:55%;object-fit:contain;';
-        img.onerror = function(){ img.style.display = 'none'; if(d.brand){ const t = document.createElement('div'); t.textContent = d.brand; t.style.cssText = 'color:#fff;font-size:7vmin;font-weight:bold;'; wrap.insertBefore(t, wrap.firstChild); } };
-        wrap.appendChild(img);
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+        img.onerror = function(){ img.style.display = 'none'; if(d.brand){ const t = document.createElement('div'); t.textContent = d.brand; t.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8vmin;font-weight:bold;'; root.insertBefore(t, root.firstChild); } };
+        root.appendChild(img);
       } else if(d.brand){
-        const t = document.createElement('div'); t.textContent = d.brand; t.style.cssText = 'color:#fff;font-size:7vmin;font-weight:bold;'; wrap.appendChild(t);
+        const t = document.createElement('div'); t.textContent = d.brand;
+        t.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8vmin;font-weight:bold;';
+        root.appendChild(t);
       }
 
+      // затемнённая полоса снизу + таймер поверх картинки (стиль Snapchat)
+      const grad = document.createElement('div');
+      grad.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.35) 45%, rgba(0,0,0,0));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 4vmin 5vmin;box-sizing:border-box;';
+      root.appendChild(grad);
       const cd = document.createElement('div');
-      cd.style.cssText = 'color:#fff;font-size:9vmin;font-weight:300;letter-spacing:2px;font-variant-numeric:tabular-nums;';
-      wrap.appendChild(cd);
+      cd.style.cssText = 'color:#fff;font-size:12vmin;font-weight:600;letter-spacing:2px;font-variant-numeric:tabular-nums;text-shadow:0 2px 14px rgba(0,0,0,0.85);line-height:1;';
+      grad.appendChild(cd);
       const note = document.createElement('div');
-      note.style.cssText = 'color:rgba(255,255,255,0.55);font-size:3.2vmin;';
-      wrap.appendChild(note);
+      note.style.cssText = 'color:rgba(255,255,255,0.92);font-size:3.6vmin;text-shadow:0 1px 8px rgba(0,0,0,0.85);margin-top:1.5vmin;';
+      grad.appendChild(note);
 
       let stopped = false;
       function tick(){
         if(stopped) return;
         const now = Date.now(), remain = d.target - now;
         if(remain > 0){
-          cd.style.display = ''; note.style.display = '';
-          cd.textContent = fmt(remain);
-          note.textContent = d.note || '';
+          grad.style.display = 'flex';
+          cd.textContent = fmt(remain); note.textContent = d.note || '';
         } else if(now < d.target + 3 * 60000){
-          cd.style.display = 'none'; note.style.display = 'none';   // лого само на 3 хв
+          grad.style.display = 'none';       // после начала — только картинка на 3 хв
         } else {
-          container.innerHTML = '';                                  // потім — чорний екран
-          stop();
+          container.innerHTML = ''; stop();   // потім чорний екран
         }
       }
       tick();

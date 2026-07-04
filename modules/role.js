@@ -20,7 +20,6 @@
     const roles = [
       { id:'operator', label:WS.t('r_operator'), desc:WS.t('r_operator_d') },
       { id:'chair',    label:WS.t('r_chair'),    desc:WS.t('r_chair_d') },
-      { id:'stage',    label:WS.t('r_stage'),    desc:WS.t('r_stage_d'), needStage:true },
       { id:'hymns',    label:WS.t('r_hymns'),    desc:WS.t('r_hymns_d'), needStage:true },
       { id:'programs', label:WS.t('r_programs'), desc:WS.t('r_programs_d') },
     ];

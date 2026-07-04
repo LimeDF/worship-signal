@@ -32,7 +32,7 @@
   // ОБЫЧНЫЙ
   function renderNormal(root){
     releaseWake();
-    const screen = WS.UI.el('div',{class:'screen app-screen col'});
+    const screen = WS.UI.el('div',{class:'screen app-screen col', style:{height:'100dvh', minHeight:'0', overflow:'hidden'}});
     connDot = WS.UI.el('span',{style:dotStyle(WS.Sync.isLive())});
     screen.appendChild(WS.UI.el('div',{class:'topbar'},
       WS.UI.el('button',{class:'icon-btn bare', onClick:()=>WS.App.show('role')},'←'),
@@ -55,16 +55,17 @@
       WS.UI.el('button',{class:'icon-btn', title:WS.t('clear_log'), onClick:()=>{ WS.UI.confirm(WS.t('clear_log_q'), ()=>WS.Log.clear()); }},'🗑')
     );
     screen.appendChild(logHead);
-    const logWrap = WS.UI.el('div',{class:'activity scroll', style:{flex:'1', minHeight:'30vh'}});
+    const logWrap = WS.UI.el('div',{class:'activity scroll', style:{flex:'1', minHeight:'0', overflowY:'auto'}});
     screen.appendChild(logWrap);
     renderLog(logWrap);
     WS.Log.onAdd(() => { if(WS.state.screen === 'operator' && mode() === 'normal') renderLog(logWrap); });
 
     screen.appendChild(WS.UI.el('div',{class:'section-h', style:{flex:'none'}}, WS.t('chat_section')));
-    const chatBox = WS.UI.el('div',{class:'col', style:{height:'34vh', flex:'none', borderTop:'1px solid var(--line)'}});
+    const chatBox = WS.UI.el('div',{class:'col', style:{flex:'0 0 40vh', minHeight:'0', overflow:'hidden', borderTop:'1px solid var(--line)'}});
     chatBox.appendChild(WS.Chat.widget(true));
     screen.appendChild(chatBox);
 
+    if(WS.StagePanel) WS.StagePanel.attach(screen);
     root.appendChild(screen);
     timers.push(setInterval(() => { if(connDot) Object.assign(connDot.style, dotStyle(WS.Sync.isLive())); }, 2000));
     WS.state._cleanup = () => { WS.Log.offAdd(); };

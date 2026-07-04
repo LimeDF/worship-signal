@@ -1,17 +1,4 @@
 {
   "schema_version": 1,
-  "items": [
-    {
-      "id": "imr5sl2ztz4bf",
-      "title": "1",
-      "text": "hello",
-      "created": 1783135076969
-    },
-    {
-      "id": "imr5sle05cygj",
-      "title": "2",
-      "text": "hello again",
-      "created": 1783135091237
-    }
-  ]
+  "items": []
 }

@@ -70,6 +70,7 @@
 
     const listWrap = WS.UI.el('div',{class:'scroll grow pad'});
     screen.appendChild(listWrap);
+    if(WS.StagePanel) WS.StagePanel.attach(screen);
     root.appendChild(screen);
 
     function setTabs(){
