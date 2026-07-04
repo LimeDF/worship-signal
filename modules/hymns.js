@@ -18,6 +18,7 @@
     const bar = WS.UI.el('div',{class:'btn-row', style:{marginBottom:'12px'}});
     if(opts.onBack) bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:opts.onBack}, WS.t('back')));
     if(opts.onEdit) bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:opts.onEdit}, WS.t('edit')));
+    bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>printChooser(item)}, WS.t('print_pdf')));
     if(bar.children.length) container.appendChild(bar);
 
     container.appendChild(WS.UI.el('div',{class:'card'},
@@ -284,5 +285,41 @@
       out.push(arr.slice(idx, idx + size)); idx += size;
     }
     return out;
+  }
+
+  // ── Печать / PDF (через системный диалог «Зберегти як PDF», чёрным по белому) ──
+  function printChooser(item){
+    const hasTr = (item.blocks || []).some(b => b.translation && b.translation.trim());
+    if(!hasTr){ printSong(item, false); return; }
+    WS.UI.modal({ title: WS.t('print_tr_q'), buttons: [
+      { label: WS.t('print_with_tr'), onClick: () => printSong(item, true) },
+      { label: WS.t('print_no_tr'), kind:'ghost', onClick: () => printSong(item, false) },
+      { label: WS.t('cancel'), kind:'ghost' }
+    ]});
+  }
+  function printPage(title, pick, item, brk){
+    const sec = document.createElement('section'); sec.className = 'print-page' + (brk ? ' brk' : '');
+    const h = document.createElement('h1'); h.className = 'print-title'; h.textContent = title; sec.appendChild(h);
+    let any = false;
+    (item.blocks || []).forEach(b => {
+      const txt = pick(b); if(!(txt && txt.trim())) return; any = true;
+      const d = document.createElement('div'); d.className = 'print-block' + (b.type === 'chorus' ? ' chorus' : '');
+      d.textContent = txt; sec.appendChild(d);
+    });
+    return any ? sec : null;
+  }
+  function printSong(item, withTr){
+    document.querySelectorAll('.print-only').forEach(n => n.remove());
+    const doc = document.createElement('div'); doc.className = 'print-only';
+    const orig = printPage('#' + (item.number != null ? item.number : '') + '  ' + (item.title || ''), b => b.text, item, false);
+    if(orig) doc.appendChild(orig);
+    if(withTr){
+      const tr = printPage((item.title || '') + ' — ' + WS.t('translation_word'), b => b.translation, item, true);
+      if(tr) doc.appendChild(tr);
+    }
+    document.body.appendChild(doc);
+    const cleanup = () => { try { doc.remove(); } catch(e){} window.removeEventListener('afterprint', cleanup); };
+    window.addEventListener('afterprint', cleanup);
+    setTimeout(() => { try { window.print(); } catch(e){ cleanup(); } }, 80);
   }
 })();

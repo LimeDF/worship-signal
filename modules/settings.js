@@ -49,6 +49,7 @@
 
       body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('admin_section')));
       body.appendChild(WS.UI.el('button',{class:'btn btn-tan', onClick:()=>WS.App.show('admin')}, WS.t('devices_levels')));
+      body.appendChild(WS.UI.el('button',{class:'btn btn-tan', style:{marginTop:'10px'}, onClick:()=>WS.App.show('schedule')}, WS.t('schedule_title')));
 
       // --- Google Drive (загрузка файлов + резервные копии) ---
       body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('drive_section')));

@@ -3,7 +3,17 @@
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
 
-  let connDot = null, stageEl = null, lostSince = 0, wasLost = false, timers = [], wakeLock = null;
+  let connDot = null, stageEl = null, lostSince = 0, wasLost = false, timers = [], wakeLock = null, splashStop = null, lastAutoTarget = 0;
+
+  // показать заставку с обратным отсчётом до начала служіння
+  function emitSplash(){
+    const cfg = WS.Cfg ? WS.Cfg.get() : {};
+    let target = WS.Schedule ? WS.Schedule.nextStart() : null;
+    const lead = WS.Schedule ? WS.Schedule.lead() : 15;
+    if(!target || target <= Date.now() - 3 * 60000) target = Date.now() + lead * 60000;
+    const p = { t:'splash', logo: cfg.splash_drive_id || '', brand: WS.t('brand'), target: target, note: WS.t('splash_note') };
+    WS.Sync.send(p); WS.Projector.set(p); WS.UI.toast(WS.t('splash_shown'));
+  }
 
   function clearTimers(){ timers.forEach(t => clearInterval(t)); timers = []; }
   function mode(){ return WS.ls.get('operator_mode','normal'); }
@@ -36,7 +46,8 @@
         WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{
           WS.Sync.send({ t:'clear' }); WS.Projector.set({ t:'clear' });
         }}, WS.t('clear_projector'))
-      )
+      ),
+      WS.UI.el('button',{class:'btn btn-tan', style:{width:'100%'}, onClick:emitSplash}, WS.t('show_splash'))
     ));
 
     const logHead = WS.UI.el('div',{class:'topbar', style:{borderBottom:'1px solid var(--line)', borderTop:'1px solid var(--line)'}},
@@ -85,15 +96,37 @@
     }
     function paint(){
       if(!stageEl) return;
+      if(splashStop){ splashStop(); splashStop = null; }
       if(wasLost){ WS.UI.clear(stageEl); return; }
       WS.UI.clear(stageEl);
       const d = WS.Projector.current;
       if(!d) return;
+      if(d.t === 'splash'){ const h = WS.Splash.render(stageEl, d); splashStop = h.stop; return; }
+      if(d.t === 'announce_loop'){
+        splashStop = WS.Loop.watch(d, (i) => {
+          WS.UI.clear(stageEl);
+          const it = (d.items || [])[i] || {};
+          const content = (it.title ? it.title + '\n\n' : '') + (it.text || '');
+          const textEl = WS.UI.el('div',{class:'proj-text'}, content);
+          stageEl.appendChild(textEl);
+          requestAnimationFrame(() => WS.UI.fitText(textEl, stageEl, 16, 240));
+        }).stop;
+        return;
+      }
       if(d.t === 'media'){
         if(d.driveId){
           const fr = WS.UI.el('iframe',{class:'proj-iframe', src:'https://drive.google.com/file/d/'+d.driveId+'/preview', allow:'autoplay; fullscreen'});
           fr.style.width = stageEl.style.width; fr.style.height = stageEl.style.height; stageEl.appendChild(fr);
         }
+        return;
+      }
+      // QR для залу (follow-along)
+      if(d.t === 'qr'){
+        const box = WS.UI.el('div');
+        Object.assign(box.style, { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'2vmin', height:'100%' });
+        if(WS.Follow && window.qrcode) box.appendChild(WS.Follow.qrEl(d.url, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.5)));
+        box.appendChild(WS.UI.el('div',{style:{color:'#fff', fontSize:'3.4vmin', opacity:'0.85'}}, WS.t('qr_scan_hint')));
+        stageEl.appendChild(box);
         return;
       }
       // ── Библия: текст (при двух языках — сплит), ссылка тонким шрифтом внизу справа ──
@@ -135,6 +168,16 @@
       if(WS.Sync.isLive()){ if(wasLost){ wasLost = false; lostSince = 0; paint(); } }
       else { if(!lostSince) lostSince = Date.now(); if(Date.now() - lostSince > WS.config.STALE_MS){ wasLost = true; if(stageEl) WS.UI.clear(stageEl); } }
     }, 3000));
+
+    // авто-заставка: за N хв до служіння (за розкладом), якщо проектор порожній
+    timers.push(setInterval(() => {
+      const d = WS.Projector.current;
+      if(d && d.t !== 'clear') return;
+      const t = WS.Schedule && WS.Schedule.nextStart();
+      if(!t) return;
+      const now = Date.now(), lead = (WS.Schedule.lead() || 15) * 60000;
+      if(t - now <= lead && t - now > 0 && lastAutoTarget !== t){ lastAutoTarget = t; emitSplash(); }
+    }, 30000));
 
     WS.state._cleanup = () => {
       WS.Projector.detach(); releaseWake();

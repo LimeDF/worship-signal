@@ -51,6 +51,28 @@
     const items = activeItems(coll);
     if(!items.length){ wrap.appendChild(WS.UI.el('div',{class:'empty'}, isAnn ? WS.t('no_announce') : WS.t('no_texts'))); return; }
 
+    let selected = null, updateStart = function(){};
+    if(isAnn){
+      selected = new Set();
+      const ctrl = WS.UI.el('div',{class:'card'});
+      ctrl.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', marginBottom:'8px'}}, WS.t('loop_hint')));
+      const intervalInp = WS.UI.el('input',{class:'input', type:'number', min:'3', max:'180', value:'10', style:{maxWidth:'90px'}});
+      ctrl.appendChild(WS.UI.el('div',{style:{display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px'}},
+        WS.UI.el('span',{class:'muted', style:{fontSize:'13px'}}, WS.t('loop_interval')), intervalInp));
+      const startBtn = WS.UI.el('button',{class:'btn', onClick:()=>{
+        if(!selected.size) return;
+        const chosen = items.filter(it => selected.has(it.id)).map(it => ({ title: it.title || '', text: it.text || it.body || '' }));
+        const interval = Math.max(3, parseInt(intervalInp.value,10) || 10);
+        const p = { t:'announce_loop', items: chosen, interval: interval, start: Date.now() };
+        WS.Sync.send(p); WS.Projector.set(p); WS.UI.toast(WS.t('loop_started'));
+      }}, WS.t('loop_start'));
+      const stopBtn = WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ WS.Sync.send({ t:'clear' }); WS.Projector.set({ t:'clear' }); WS.UI.toast(WS.t('projector_cleared')); }}, WS.t('loop_stop'));
+      ctrl.appendChild(WS.UI.el('div',{class:'btn-row'}, startBtn, stopBtn));
+      wrap.appendChild(ctrl);
+      updateStart = function(){ startBtn.disabled = selected.size === 0; startBtn.textContent = WS.t('loop_start') + (selected.size ? (' (' + selected.size + ')') : ''); };
+      updateStart();
+    }
+
     items.forEach(it => {
       const row = WS.UI.el('div',{class:'row'},
         WS.UI.el('div',{class:'main', style:{cursor:'pointer'}, onClick:()=>{
@@ -61,6 +83,10 @@
           WS.UI.el('div',{class:'prev'}, WS.UI.preview(it.text||it.body, 60))
         )
       );
+      if(isAnn){
+        const chk = WS.UI.el('div',{class:'vchk', onClick:(e)=>{ e.stopPropagation(); if(selected.has(it.id)){ selected.delete(it.id); chk.textContent='○'; row.classList.remove('sel'); } else { selected.add(it.id); chk.textContent='●'; row.classList.add('sel'); } updateStart(); }},'○');
+        row.insertBefore(chk, row.firstChild);
+      }
       if(WS.Auth.canAdd()) row.appendChild(WS.UI.el('button',{class:'icon-btn', title:WS.t('edit'), onClick:()=>openItemEditor(wrap, coll, it)},'✎'));
       wrap.appendChild(row);
     });
@@ -213,24 +239,19 @@
 
   function optEl(val, label, cur){ const o = document.createElement('option'); o.value = val; o.textContent = label; if(cur === val) o.selected = true; return o; }
 
-  // БИБЛИЯ — реальный текст (WEB + Огієнко тянутся с bolls и кэшируются)
-  let bibleMode = WS.ls.get('bible_mode','screen');      // 'screen' = сразу на проектор, 'operator' = оператору (чтение)
-  let bibleBi   = WS.ls.get('bible_bi','') === '1';       // показывать две языки (укр+англ) сплитом
+  // БИБЛИЯ — полный текст, режим чтения-лента, мультивыбор стихов
+  let bibleMode = WS.ls.get('bible_mode','screen');      // 'screen' = тап проецирует сразу, 'operator' = только чтение/оператору
+  let bibleBi   = WS.ls.get('bible_bi','') === '1';       // две языки (укр+англ) сплитом на проекторе
   function renderBible(wrap){
     WS.UI.clear(wrap);
-
-    // режим: на экран / оператору
     wrap.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginBottom:'10px'}},
       WS.UI.el('button',{class:'btn'+(bibleMode==='screen'?'':' btn-ghost'), onClick:()=>{ bibleMode='screen'; WS.ls.set('bible_mode','screen'); renderBible(wrap); }}, WS.t('bible_to_screen')),
       WS.UI.el('button',{class:'btn'+(bibleMode==='operator'?'':' btn-ghost'), onClick:()=>{ bibleMode='operator'; WS.ls.set('bible_mode','operator'); renderBible(wrap); }}, WS.t('bible_to_operator'))
     ));
-    // две языки (сплит)
     wrap.appendChild(WS.UI.el('button',{class:'btn'+(bibleBi?'':' btn-ghost'), style:{width:'100%', marginBottom:'12px'}, onClick:()=>{ bibleBi=!bibleBi; WS.ls.set('bible_bi', bibleBi?'1':''); renderBible(wrap); }}, (bibleBi?'✓ ':'') + WS.t('bible_two_lang')));
 
     const tabs = WS.UI.el('div',{class:'tabs', style:{padding:'0 0 12px', flexWrap:'wrap'}});
-    WS.Bible.translations.forEach(tr => {
-      tabs.appendChild(WS.UI.el('button',{class:'tab'+(bibleCode===tr.code?' on':''), onClick:()=>{ bibleCode=tr.code; WS.ls.set('bible_code',tr.code); renderBible(wrap); }}, tr.name));
-    });
+    WS.Bible.translations.forEach(tr => tabs.appendChild(WS.UI.el('button',{class:'tab'+(bibleCode===tr.code?' on':''), onClick:()=>{ bibleCode=tr.code; WS.ls.set('bible_code',tr.code); renderBible(wrap); }}, tr.name)));
     wrap.appendChild(tabs);
 
     const books = WS.Data.items('bible');
@@ -246,8 +267,7 @@
       const rowsWrap = WS.UI.el('div', null); listWrap.appendChild(rowsWrap);
       const rows = books.map(b => {
         const row = WS.UI.el('div',{class:'row', onClick:()=>showChapters(b)}, WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, bookName(b))));
-        row._hay = (bookName(b) || '').toLowerCase();
-        rowsWrap.appendChild(row); return row;
+        row._hay = (bookName(b) || '').toLowerCase(); rowsWrap.appendChild(row); return row;
       });
       search.addEventListener('input', ()=>{ const q = search.value.trim().toLowerCase(); rows.forEach(r => r.style.display = (!q || r._hay.indexOf(q) !== -1) ? '' : 'none'); });
     }
@@ -259,46 +279,127 @@
       for(let c=1;c<=b.chapters;c++) grid.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{padding:'12px 0'}, onClick:()=>showVerses(b,c)}, String(c)));
       listWrap.appendChild(grid);
     }
+
     function showVerses(b, c){
       const bookNum = books.indexOf(b) + 1;
       WS.UI.clear(listWrap);
-      listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:()=>showChapters(b)}, WS.t('back_chapters')));
-      listWrap.appendChild(WS.UI.el('div',{style:{fontWeight:'bold', marginBottom:'10px'}}, bookName(b) + ' ' + c));
+      listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'10px'}, onClick:()=>showChapters(b)}, WS.t('back_chapters')));
+      listWrap.appendChild(WS.UI.el('div',{style:{fontWeight:'bold', marginBottom:'8px'}}, bookName(b) + ' ' + c));
+      listWrap.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'12px', marginBottom:'10px'}}, WS.t('bible_tap_hint')));
       const status = WS.UI.el('div',{class:'empty'}, WS.t('loading')); listWrap.appendChild(status);
       const need = bibleBi ? ['UBIO','WEB'] : [bibleCode];
       Promise.all(need.map(code => WS.Bible.getChapter(code, bookNum, c))).then(results => {
         if(WS.state.screen !== 'chair') return;
         status.remove();
-        const uaArr = bibleBi ? results[0] : null, enArr = bibleBi ? results[1] : null;
-        const listVerses = bibleBi ? (bibleCode==='WEB' ? results[1] : results[0]) : results[0];
-        if(!listVerses || !listVerses.length){ listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_load_fail'))); return; }
-        listVerses.forEach(vo => {
-          const texts = { primary: vo.text, ua: uaArr ? WS.Bible.verseText(uaArr, vo.verse) : null, en: enArr ? WS.Bible.verseText(enArr, vo.verse) : null };
-          listWrap.appendChild(WS.UI.el('div',{class:'row', onClick:()=>sendVerse(b, c, vo.verse, texts)},
+        const listArr = results[0];
+        if(!listArr || !listArr.length){ listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_load_fail'))); return; }
+
+        const selected = new Set();
+        const bar = WS.UI.el('div',{class:'btn-row', style:{position:'sticky', bottom:'0', padding:'10px 0', background:'var(--kombu)', display:'none'}});
+        const bcast = WS.UI.el('button',{class:'btn', onClick:()=>{ if(selected.size) emitMany(b, c, [...selected].sort((x,y)=>x-y), results); }});
+        const clr = WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ selected.clear(); rows.forEach(r=>r.el.classList.remove('sel')); updateBar(); }}, WS.t('clear_sel'));
+        bar.appendChild(bcast); bar.appendChild(clr);
+        function updateBar(){
+          if(!selected.size){ bar.style.display='none'; return; }
+          bar.style.display=''; bcast.textContent = (bibleMode==='screen'?WS.t('broadcast_sel'):WS.t('to_operator_sel')) + ' (' + rangeStr([...selected]) + ')';
+        }
+
+        const rows = listArr.map(vo => {
+          const chk = WS.UI.el('div',{class:'vchk', onClick:(e)=>{ e.stopPropagation(); if(selected.has(vo.verse)){ selected.delete(vo.verse); row.classList.remove('sel'); chk.textContent='○'; } else { selected.add(vo.verse); row.classList.add('sel'); chk.textContent='●'; } updateBar(); }},'○');
+          const row = WS.UI.el('div',{class:'row bverse', onClick:()=>openReading(b, c, results, vo.verse)},
+            chk,
             WS.UI.el('div',{class:'num'}, String(vo.verse)),
-            WS.UI.el('div',{class:'main'}, WS.UI.el('div',{style:{whiteSpace:'pre-wrap'}}, WS.UI.preview(vo.text, 100)))
-          ));
+            WS.UI.el('div',{class:'main'}, WS.UI.el('div',{style:{whiteSpace:'pre-wrap', lineHeight:'1.4'}}, vo.text))
+          );
+          listWrap.appendChild(row);
+          return { v: vo.verse, el: row };
         });
+        listWrap.appendChild(bar);
       }).catch(() => { if(WS.state.screen !== 'chair') return; status.remove(); listWrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('bible_load_fail'))); });
     }
-    function sendVerse(b, c, v, texts){
+
+    // Режим чтения — лента: предыдущий (тускло) / текущий (в рамке) / следующий (тускло)
+    function openReading(b, c, results, startVerse){
+      const arr = results[0];
+      let idx = arr.findIndex(x => x.verse === startVerse); if(idx < 0) idx = 0;
+      WS.UI.clear(listWrap);
+      listWrap.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginBottom:'8px'}},
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>showVerses(b, c)}, WS.t('back_chapters')),
+        WS.UI.el('button',{class:'btn'+(bibleMode==='screen'?'':' btn-tan'), onClick:()=>emitOne(b, c, arr[idx].verse, results)}, bibleMode==='screen'?WS.t('bible_to_screen'):WS.t('bible_to_operator'))
+      ));
+      const ribbon = WS.UI.el('div', null); listWrap.appendChild(ribbon);
+      const nav = WS.UI.el('div',{class:'btn-row', style:{marginTop:'10px'}},
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>move(-1)}, '↑ ' + WS.t('prev_verse')),
+        WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>move(1)}, WS.t('next_verse') + ' ↓')
+      );
+      listWrap.appendChild(nav);
+
+      function card(vo, cls){
+        const c2 = WS.UI.el('div',{class:'rd-card '+cls},
+          WS.UI.el('span',{class:'rd-vnum'}, String(vo.verse)),
+          WS.UI.el('span',{style:{whiteSpace:'pre-wrap'}}, vo.text));
+        if(cls==='dim') c2.onclick = ()=>{ idx = arr.indexOf(vo); paint(); };
+        return c2;
+      }
+      function paint(){
+        WS.UI.clear(ribbon);
+        if(arr[idx-1]) ribbon.appendChild(card(arr[idx-1], 'dim'));
+        ribbon.appendChild(card(arr[idx], 'active'));
+        if(arr[idx+1]) ribbon.appendChild(card(arr[idx+1], 'dim'));
+        if(bibleMode==='screen') emitOne(b, c, arr[idx].verse, results, true);
+      }
+      function move(d){ const n = idx + d; if(n < 0 || n >= arr.length) return; idx = n; paint(); }
+      paint();
+    }
+
+    function emitOne(b, c, v, results, silent){
       const uaRef = b.ua + ' ' + c + ':' + v, enRef = b.en + ' ' + c + ':' + v;
       let payload;
       if(bibleBi){
-        const ref = uaRef + ' / ' + enRef;
         payload = (bibleMode==='screen')
-          ? { t:'bible', ref: ref, text: texts.ua || '', text_en: texts.en || '', bilingual:true }
-          : { t:'activity', kind:'bible', label: ref + ' — ' + (texts.ua||'') + '  /  ' + (texts.en||'') };
+          ? { t:'bible', ref: uaRef+' / '+enRef, text: WS.Bible.verseText(results[0], v), text_en: WS.Bible.verseText(results[1], v), bilingual:true }
+          : { t:'activity', kind:'bible', label: uaRef+' / '+enRef+' — '+WS.Bible.verseText(results[0], v)+'  /  '+WS.Bible.verseText(results[1], v) };
       } else {
         const ref = (lang==='en') ? enRef : uaRef;
         payload = (bibleMode==='screen')
-          ? { t:'bible', ref: ref, text: texts.primary || '' }
-          : { t:'activity', kind:'bible', label: ref + ' — ' + (texts.primary||'') };
+          ? { t:'bible', ref: ref, text: WS.Bible.verseText(results[0], v) }
+          : { t:'activity', kind:'bible', label: ref+' — '+WS.Bible.verseText(results[0], v) };
+      }
+      WS.Sync.send(payload);
+      if(bibleMode==='screen') WS.Projector.set(payload);
+      if(!silent) WS.UI.toast(bibleMode==='screen' ? WS.t('sent_projector') : WS.t('sent_operator', (lang==='en'?enRef:uaRef)));
+    }
+
+    function emitMany(b, c, nums, results){
+      const rs = rangeStr(nums);
+      const uaRef = b.ua + ' ' + c + ':' + rs, enRef = b.en + ' ' + c + ':' + rs;
+      const join = (arr) => nums.map(n => WS.Bible.verseText(arr, n)).filter(Boolean).join('\n');
+      let payload;
+      if(bibleBi){
+        payload = (bibleMode==='screen')
+          ? { t:'bible', ref: uaRef+' / '+enRef, text: join(results[0]), text_en: join(results[1]), bilingual:true }
+          : { t:'activity', kind:'bible', label: uaRef+' / '+enRef+' — '+join(results[0])+'  /  '+join(results[1]) };
+      } else {
+        const ref = (lang==='en') ? enRef : uaRef;
+        payload = (bibleMode==='screen') ? { t:'bible', ref: ref, text: join(results[0]) } : { t:'activity', kind:'bible', label: ref+' — '+join(results[0]) };
       }
       WS.Sync.send(payload);
       if(bibleMode==='screen') WS.Projector.set(payload);
       WS.UI.toast(bibleMode==='screen' ? WS.t('sent_projector') : WS.t('sent_operator', (lang==='en'?enRef:uaRef)));
     }
+
     showBooks();
+  }
+
+  // "16,17,18" -> "16-18"; "16,18,20" -> "16, 18, 20"; "16,17,20" -> "16-17, 20"
+  function rangeStr(nums){
+    const a = [...new Set(nums)].sort((x,y)=>x-y); if(!a.length) return '';
+    const parts = []; let s = a[0], p = a[0];
+    for(let i=1;i<=a.length;i++){
+      if(i < a.length && a[i] === p + 1){ p = a[i]; continue; }
+      parts.push(s === p ? String(s) : (s + '-' + p));
+      if(i < a.length){ s = a[i]; p = a[i]; }
+    }
+    return parts.join(', ');
   }
 })();

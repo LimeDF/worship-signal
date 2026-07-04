@@ -44,7 +44,7 @@
     const mine = (p._dev === WS.Auth.getDeviceId());
 
     // ----- ПРОЕКТОР (одинаково на всех устройствах) -----
-    if(p.t === 'block' || p.t === 'text' || p.t === 'media' || p.t === 'bible') WS.Projector.set(p);
+    if(p.t === 'block' || p.t === 'text' || p.t === 'media' || p.t === 'bible' || p.t === 'qr' || p.t === 'splash' || p.t === 'announce_loop') WS.Projector.set(p);
     else if(p.t === 'clear') WS.Projector.set({ t:'clear' });
 
     // ----- ЛОГ (строится из потока, свои события тоже) -----
@@ -74,9 +74,21 @@
     if(typeof WS.state.onMessage === 'function'){ try { WS.state.onMessage(p); } catch(e){ console.error(e); } }
   }
 
+  WS.App.isWatch = function(){ return (location.hash || '').indexOf('watch') !== -1; };
+
   WS.App.boot = function(){
     WS.Auth.getDeviceId();
     WS.Sync.on(globalHandler);
+
+    // режим зрителя (follow-along): без пароля, только чтение проектора
+    if(WS.App.isWatch()){
+      WS.state.viewer = true;
+      WS.Sync.connect();          // SSE + опрос (ничего не шлём)
+      WS.App.show('follow');
+      WS.Sync.restore();          // получить текущий слайд
+      return;
+    }
+
     if(WS.Presence) WS.Presence.start();
 
     WS.Sync.connect();          // связь включается СРАЗУ (SSE + опрос), не ждём историю

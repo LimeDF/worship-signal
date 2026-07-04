@@ -6,6 +6,7 @@
     const screen = WS.UI.el('div',{class:'screen app-screen col'});
     screen.appendChild(WS.UI.el('div',{class:'topbar'},
       WS.UI.el('div',{class:'title'}, WS.t('brand')),
+      WS.UI.el('button',{class:'icon-btn bare', title:WS.t('qr_hall'), onClick:()=>WS.Follow.showQR()},'▦'),
       WS.UI.el('button',{class:'icon-btn bare', title:WS.t('settings'), onClick:()=>WS.App.show('settings')},'⚙')
     ));
 

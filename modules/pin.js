@@ -24,6 +24,10 @@
     screen.appendChild(inp);
     screen.appendChild(WS.UI.el('div',{class:'spacer'}));
     screen.appendChild(WS.UI.el('button',{class:'btn', style:{maxWidth:'320px'}, onClick:submit}, WS.t('login_btn')));
+    screen.appendChild(WS.UI.el('div',{class:'btn-row', style:{maxWidth:'320px', marginTop:'12px'}},
+      WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ location.hash='#watch'; location.reload(); }}, WS.t('follow_btn')),
+      WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'0 0 auto'}, onClick:()=>WS.Follow.showQR()},'QR')
+    ));
     root.appendChild(screen);
     setTimeout(()=>{ if(!locked) inp.focus(); }, 150);
 
