@@ -6,7 +6,7 @@
       "drive_client_id": "",
       "service": {
         "mode": "weekly",
-        "time": "23:25",
+        "time": "23:30",
         "weekday": 5,
         "date": "",
         "lead": 15
