@@ -49,41 +49,6 @@
         }
       ],
       "active": true
-    },
-    {
-      "id": "imr80jy510epg",
-      "date": "2026-07-06",
-      "time": "10:00",
-      "type": "rest",
-      "place": "basement",
-      "place_custom": "",
-      "blocks": [
-        {
-          "type": "prayer",
-          "people": [
-            "Yroslaw  Karnauch"
-          ],
-          "note": ""
-        },
-        {
-          "type": "preaching",
-          "people": [
-            "Yroslaw  Karnauch"
-          ],
-          "translator": "Diana  Ponizhaylo",
-          "topic": "",
-          "scriptures": [],
-          "media": []
-        },
-        {
-          "type": "songs",
-          "people": [
-            "Taras Logvis"
-          ],
-          "songs": []
-        }
-      ],
-      "active": false
     }
   ]
 }
