@@ -145,7 +145,9 @@
         b.appendChild(WS.UI.el('div',{class:'muted', style:{marginBottom:'10px', fontSize:'13px'}}, (svc.time||'') + '  ·  ' + (WS.Services.placeLabel ? WS.Services.placeLabel(svc) : '')));
         if(!blocks.length) b.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('srv_none_day')));
         blocks.forEach(blk => {
-          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'8px 0 6px'}}, WS.t('blk_'+blk.type) + (blk.person ? ('  ·  ' + blk.person) : '')));
+          const who = (blk.people && blk.people.length) ? ('  ·  ' + blk.people.join(', ')) : '';
+          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'8px 0 6px'}}, WS.t('blk_'+blk.type) + who));
+          if(blk.translator) b.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'12px', padding:'0 0 4px'}}, '🎧 ' + WS.t('srv_translator') + ': ' + blk.translator));
           if(blk.type === 'songs'){
             (blk.songs||[]).forEach(r => b.appendChild(WS.UI.el('div',{class:'row', onClick:()=>openSong(r)},
               WS.UI.el('div',{class:'num'}, '#'+(r.number||'')), WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, r.title||'')), WS.UI.el('span',{class:'muted'},'›'))));

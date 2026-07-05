@@ -350,3 +350,11 @@ img, iframe, svg, video{ max-width:100%; }
   .role-name{ font-size:18px; }
   .quad-big .q-repeat, .quad-big .q-next, .quad-big .q-prev, .quad-big .q-exit{ min-height:64px; font-size:19px; }
 }
+
+/* люди в блоках (карточный выбор) */
+.ppl-wrap{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
+.ppl-chip{ display:flex; align-items:center; gap:6px; background:var(--moss); color:#1c2114; border-radius:16px; padding:6px 6px 6px 12px; font-size:14px; font-weight:bold; max-width:100%; }
+.ppl-chip > span{ overflow-wrap:anywhere; }
+.ppl-x{ background:rgba(0,0,0,0.2); color:#1c2114; border:none; width:22px; height:22px; min-width:22px; border-radius:50%; cursor:pointer; font-size:12px; }
+.ppl-add{ background:transparent; border:1px dashed var(--line); color:var(--bone); border-radius:16px; padding:6px 14px; cursor:pointer; font-size:14px; }
+.cal-cell.filled .cal-num{ text-shadow:0 1px 3px rgba(0,0,0,0.65); font-weight:bold; }

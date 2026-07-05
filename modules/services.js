@@ -1,7 +1,7 @@
 /* services.js — Розклад служінь: календар, редактор (місце/ведучі/пісні/писання/медіа), активація. */
 (function(){
   WS.App = WS.App || {}; WS.App.screens = WS.App.screens || {};
-  const P = ['own','other','basement','custom'];
+  const P = ['own','other','basement','pavilion','custom'];
   const TYPES = [
     { id:'service', color:'#4a7a3a' },   // зелений — служіння
     { id:'prayer',  color:'#c9a227' },   // жовтий — молитва
@@ -13,20 +13,24 @@
   const BLK_ORDER = ['songs','prayer','preaching','media','note'];
   const BLK_MIN = { songs:'worship', prayer:'prayer', preaching:'preaching', media:'media', note:null };
   function newBlock(t){
-    if(t==='songs') return { type:'songs', person:'', songs:[] };
-    if(t==='prayer') return { type:'prayer', person:'', note:'' };
-    if(t==='preaching') return { type:'preaching', person:'', topic:'', scriptures:[], media:[] };
-    if(t==='media') return { type:'media', person:'', media:[] };
+    if(t==='songs') return { type:'songs', people:[], songs:[] };
+    if(t==='prayer') return { type:'prayer', people:[], note:'' };
+    if(t==='preaching') return { type:'preaching', people:[], translator:'', topic:'', scriptures:[], media:[] };
+    if(t==='media') return { type:'media', people:[], media:[] };
     return { type:'note', text:'' };
   }
-  // миграция старых служений (структурные поля -> блоки)
+  function normBlock(b){ if(b.type !== 'note' && !Array.isArray(b.people)) b.people = b.person ? [b.person] : []; return b; }
+  // миграция старых служений (структурные поля -> блоки), нормализация person->people
   function migrate(s){
-    if(Array.isArray(s.blocks)) return s;
-    const b = [];
-    if((s.worship_songs && s.worship_songs.length) || s.worship_leader) b.push({ type:'songs', person:s.worship_leader||'', songs:s.worship_songs||[] });
-    if(s.preacher || s.topic || (s.scriptures && s.scriptures.length)) b.push({ type:'preaching', person:s.preacher||'', topic:s.topic||'', scriptures:s.scriptures||[], media:[] });
-    if(s.media && s.media.length) b.push({ type:'media', person:'', media:s.media });
-    s.blocks = b; return s;
+    if(!Array.isArray(s.blocks)){
+      const b = [];
+      if((s.worship_songs && s.worship_songs.length) || s.worship_leader) b.push({ type:'songs', people:s.worship_leader?[s.worship_leader]:[], songs:s.worship_songs||[] });
+      if(s.preacher || s.topic || (s.scriptures && s.scriptures.length)) b.push({ type:'preaching', people:s.preacher?[s.preacher]:[], translator:'', topic:s.topic||'', scriptures:s.scriptures||[], media:[] });
+      if(s.media && s.media.length) b.push({ type:'media', people:[], media:s.media });
+      s.blocks = b;
+    }
+    s.blocks.forEach(normBlock);
+    return s;
   }
   function pad(n){ return (n<10?'0':'')+n; }
   function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -80,11 +84,15 @@
         const cell=WS.UI.el('div',{class:'cal-cell'+(ds===tstr?' today':'')+(dayItems.length?' filled':''), onClick:()=>openDay(ds)},
           WS.UI.el('span',{class:'cal-num'}, String(dnum)));
         if(dayItems.length){
-          cell.style.background = typeColor(dayItems[0].type);
           cell.style.color = '#fff';
-          const dots=WS.UI.el('div',{class:'cal-dots'});
-          dayItems.slice(0,4).forEach(s=> dots.appendChild(WS.UI.el('span',{class:'cal-dot2'+(s.active?' act':'')})));
-          cell.appendChild(dots);
+          const cols = dayItems.slice(0,5).map(s=>typeColor(s.type));
+          if(cols.length === 1){ cell.style.background = cols[0]; }
+          else {
+            // 2+ служения — делим клетку по диагонали (conic-gradient)
+            const n = cols.length, seg = 360 / n, stops = [];
+            cols.forEach((c,k)=>{ stops.push(c + ' ' + (seg*k) + 'deg ' + (seg*(k+1)) + 'deg'); });
+            cell.style.background = 'conic-gradient(from 45deg, ' + stops.join(', ') + ')';
+          }
         }
         grid.appendChild(cell);
       }
@@ -105,7 +113,8 @@
       c.appendChild(WS.UI.el('div',{class:'srv-when'}, fmtDate(s.date)+'  ·  '+(s.time||'')+'  ·  '+placeLabel(s)));
       (s.blocks||[]).forEach(b=>{
         let extra=''; if(b.type==='songs') extra=' ('+(b.songs||[]).length+')'; if(b.type==='preaching' && b.topic) extra=' — '+b.topic;
-        c.appendChild(WS.UI.el('div',{class:'srv-line'}, WS.t('blk_'+b.type)+(b.person?(': '+b.person):'')+extra));
+        const who = (b.people && b.people.length) ? (': ' + b.people.join(', ')) : '';
+        c.appendChild(WS.UI.el('div',{class:'srv-line'}, WS.t('blk_'+b.type) + who + extra));
       });
       if(canEdit){
         c.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'10px'}},
@@ -127,11 +136,33 @@
         canEdit ? WS.UI.el('button',{class:'icon-btn', onClick:()=>{ closeOverlays(); openEditor(null, ds); }},'＋') : null
       ));
       const bd = WS.UI.el('div',{class:'scroll grow pad'});
+      if(list.length) bd.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:()=>whoParticipates(ds, list)}, '👥 ' + WS.t('who_participates')));
       if(!list.length) bd.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('srv_none_day')));
       list.forEach(s=> bd.appendChild(detailCard(s)));
       overlay.appendChild(bd);
       document.body.appendChild(overlay);
       requestAnimationFrame(()=> overlay.classList.add('open'));
+    }
+    // все участники дня: имя + что делает
+    function whoParticipates(ds, list){
+      const rows = [];
+      list.forEach(s=>{ migrate(s); (s.blocks||[]).forEach(b=>{
+        const role = WS.t('blk_'+b.type);
+        (b.people && b.people.length ? b.people : (b.person ? [b.person] : [])).forEach(nm=> rows.push({ name:nm, role:role }));
+        if(b.translator) rows.push({ name:b.translator, role:WS.t('srv_translator') });
+      }); });
+      const b = WS.UI.el('div', null);
+      if(!rows.length) b.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('who_none')));
+      // сгруппировать по человеку
+      const byName = {};
+      rows.forEach(r=>{ (byName[r.name] = byName[r.name] || []).push(r.role); });
+      Object.keys(byName).forEach(nm=>{
+        b.appendChild(WS.UI.el('div',{class:'row'},
+          WS.UI.el('div',{class:'person-av', style:{width:'40px', height:'40px', flex:'0 0 40px', fontSize:'16px', margin:'0 12px 0 0'}}, (nm||'?')[0]),
+          WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, nm), WS.UI.el('div',{class:'prev'}, byName[nm].join(', ')))
+        ));
+      });
+      WS.UI.modal({ title:WS.t('who_participates'), body:b, buttons:[{label:WS.t('close'), kind:'ghost'}] });
     }
     function detailCard(s){
       migrate(s);
@@ -141,7 +172,9 @@
       c.appendChild(WS.UI.el('div',{class:'srv-when'}, (s.time||'') + '  ·  ' + placeLabel(s)));
       const item = (txt)=> c.appendChild(WS.UI.el('div',{class:'srv-item'}, txt));
       (s.blocks||[]).forEach(b=>{
-        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('blk_'+b.type) + (b.person ? (': ' + b.person) : '')));
+        const who = (b.people && b.people.length) ? (': ' + b.people.join(', ')) : '';
+        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('blk_'+b.type) + who));
+        if(b.translator) item('🎧  ' + WS.t('srv_translator') + ': ' + b.translator);
         if(b.type==='songs') (b.songs||[]).forEach(r=> item('♪  #'+(r.number||'')+' '+(r.title||'')));
         else if(b.type==='preaching'){ if(b.topic) item('— '+b.topic); (b.scriptures||[]).forEach(r=> item('✝  '+r.ref)); (b.media||[]).forEach(r=> item('▣  '+(r.title||''))); }
         else if(b.type==='prayer'){ if(b.note) item(b.note); }
@@ -172,13 +205,25 @@
     }
 
     // ── Редактор служіння (блочний) ──
-    function peopleDatalist(ministry, id){
-      const src0 = WS.People ? WS.People.forMinistry(ministry) : [];
-      const src = (src0 && src0.length) ? src0 : (WS.People ? WS.People.list() : []);
-      if(!src.length) return null;
-      const dl = document.createElement('datalist'); dl.id = id + '_' + Math.random().toString(36).slice(2,6);
-      src.forEach(p=>{ const o=document.createElement('option'); o.value=WS.People.name(p); dl.appendChild(o); });
-      return dl;
+    function personPicker(ministry, onPick){
+      const people = WS.People ? WS.People.forMinistry(ministry) : [];
+      const all = WS.People ? WS.People.list() : [];
+      const src = (people && people.length) ? people : all;
+      const b = WS.UI.el('div', null);
+      const mo = WS.UI.modal({ title:WS.t('srv_pick_person'), body:b, buttons:[{ label:WS.t('people_manage'), kind:'ghost', onClick:()=>{ mo.close(); WS.App.show('people'); } }, { label:WS.t('close'), kind:'ghost' }] });
+      if(!src.length){ b.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('people_none'))); return; }
+      const grid = WS.UI.el('div',{class:'people-grid'});
+      src.forEach(p=>{
+        const card = WS.UI.el('div',{class:'person-card', onClick:()=>{ onPick(WS.People.name(p)); mo.close(); }});
+        const av = WS.UI.el('div',{class:'person-av'});
+        if(p.photo){ const img=document.createElement('img'); img.src='https://drive.google.com/thumbnail?id='+p.photo+'&sz=w200'; img.onerror=function(){ img.remove(); av.textContent=(p.first||'?')[0]; }; av.appendChild(img); }
+        else av.textContent=(p.first||'?')[0];
+        card.appendChild(av);
+        card.appendChild(WS.UI.el('div',{class:'person-name'}, WS.People.name(p)));
+        card.appendChild(WS.UI.el('div',{class:'person-min'}, (p.ministries||[]).map(mm=>WS.t('min_'+mm)).join(', ')));
+        grid.appendChild(card);
+      });
+      b.appendChild(grid);
     }
     function openEditor(existing, dateStr){
       const m = existing ? migrate(JSON.parse(JSON.stringify(existing))) : { id:WS.Data.newId(), date:dateStr||todayStr(), time:'10:00', type:'service', place:'own', place_custom:'', blocks:[], active:false };
@@ -226,14 +271,25 @@
           )
         ));
         if(b.type!=='note'){
-          const who=WS.UI.el('input',{class:'input', placeholder:WS.t('blk_person'), value:b.person||''}); who.addEventListener('input',()=>b.person=who.value); card.appendChild(who);
-          const dl=peopleDatalist(BLK_MIN[b.type]||'other','pl'); if(dl){ who.setAttribute('list', dl.id); card.appendChild(dl); }
+          normBlock(b);
+          const ministry = BLK_MIN[b.type] || 'other';
+          card.appendChild(WS.UI.el('div',{class:'field-label', style:{fontSize:'12px'}}, WS.t('blk_person')));
+          const pw = WS.UI.el('div',{class:'ppl-wrap'}); card.appendChild(pw);
+          const drawPeople=()=>{ WS.UI.clear(pw);
+            (b.people||[]).forEach((nm,k)=> pw.appendChild(WS.UI.el('div',{class:'ppl-chip'}, WS.UI.el('span',null,nm), WS.UI.el('button',{class:'ppl-x', onClick:()=>{ b.people.splice(k,1); drawPeople(); }},'✕'))));
+            pw.appendChild(WS.UI.el('button',{class:'ppl-add', onClick:()=>personPicker(ministry, (nm)=>{ b.people=b.people||[]; if(b.people.indexOf(nm)<0) b.people.push(nm); drawPeople(); })}, '+ '+WS.t('blk_pick_person')));
+          };
+          drawPeople();
         }
         if(b.type==='songs'){
           const box=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(box);
           const rd=()=>{ WS.UI.clear(box); b.songs=b.songs||[]; b.songs.forEach((r,j)=> box.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,'#'+(r.number||'')+' '+(r.title||'')), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.songs.splice(j,1); rd(); }},'✕')))); box.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickSongs(b.songs, rd)}, '+ '+WS.t('srv_add_songs'))); };
           rd();
         } else if(b.type==='preaching'){
+          card.appendChild(WS.UI.el('div',{class:'field-label', style:{fontSize:'12px'}}, WS.t('srv_translator')));
+          const tw=WS.UI.el('div',{class:'ppl-wrap'}); card.appendChild(tw);
+          const drawTr=()=>{ WS.UI.clear(tw); if(b.translator){ tw.appendChild(WS.UI.el('div',{class:'ppl-chip'}, WS.UI.el('span',null,b.translator), WS.UI.el('button',{class:'ppl-x', onClick:()=>{ b.translator=''; drawTr(); }},'✕'))); } else tw.appendChild(WS.UI.el('button',{class:'ppl-add', onClick:()=>personPicker('translation',(nm)=>{ b.translator=nm; drawTr(); })}, '+ '+WS.t('srv_translator'))); };
+          drawTr();
           const tp=WS.UI.el('input',{class:'input', placeholder:WS.t('srv_topic_ph'), value:b.topic||'', style:{marginTop:'8px'}}); tp.addEventListener('input',()=>b.topic=tp.value); card.appendChild(tp);
           const sb=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(sb);
           const rs=()=>{ WS.UI.clear(sb); b.scriptures=b.scriptures||[]; b.scriptures.forEach((r,j)=> sb.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,r.ref), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.scriptures.splice(j,1); rs(); }},'✕')))); sb.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickScripture(b.scriptures, rs)}, '+ '+WS.t('srv_add_scr'))); };
