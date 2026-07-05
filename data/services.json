@@ -1,4 +1,51 @@
 {
   "schema_version": 1,
-  "items": []
+  "items": [
+    {
+      "id": "imr7vvpzp9yg0",
+      "date": "2026-07-05",
+      "time": "10:00",
+      "type": "service",
+      "place": "own",
+      "place_custom": "",
+      "blocks": [
+        {
+          "type": "media",
+          "people": [
+            "Angelina  Filonenko"
+          ],
+          "media": []
+        },
+        {
+          "type": "songs",
+          "people": [
+            "Taras Logvis"
+          ],
+          "songs": [
+            {
+              "coll": "songs",
+              "id": "s_4",
+              "number": 4,
+              "title": "Вже надходить той день (What a Day That Will Be)"
+            }
+          ]
+        },
+        {
+          "type": "prayer",
+          "people": [
+            "Oleg  Makosiy"
+          ],
+          "note": ""
+        },
+        {
+          "type": "media",
+          "people": [
+            "Angelina  Filonenko"
+          ],
+          "media": []
+        }
+      ],
+      "active": true
+    }
+  ]
 }
