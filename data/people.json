@@ -1,4 +1,16 @@
 {
   "schema_version": 1,
-  "items": []
+  "items": [
+    {
+      "id": "imr7v6jhd74zr",
+      "first": "Oleg ",
+      "last": "Makosiy",
+      "photo": "",
+      "ministries": [
+        "prayer",
+        "preaching",
+        "translation"
+      ]
+    }
+  ]
 }
