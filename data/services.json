@@ -1,4 +1,23 @@
 {
   "schema_version": 1,
-  "items": []
+  "items": [
+    {
+      "id": "imr7vvpzp9yg0",
+      "date": "2026-07-05",
+      "time": "10:00",
+      "type": "service",
+      "place": "own",
+      "place_custom": "",
+      "blocks": [
+        {
+          "type": "media",
+          "people": [
+            "Angelina  Filonenko"
+          ],
+          "media": []
+        }
+      ],
+      "active": false
+    }
+  ]
 }
