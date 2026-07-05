@@ -248,3 +248,73 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .stage-panel.open{ transform:translateY(0); }
 .stage-handle{ width:44px; height:5px; border-radius:3px; background:rgba(255,255,255,0.35); margin:6px auto 10px; cursor:pointer; }
 .stage-ptitle{ text-align:center; font-size:13px; color:var(--bone-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+
+/* оператор: предпросмотр проектора */
+.proj-preview{ flex:1.4 1 0; min-width:0; min-height:90px; background:#000; border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:6px; }
+.pp-text{ color:#fff; font-size:11px; line-height:1.25; white-space:pre-wrap; text-align:center; overflow:hidden; max-height:100%; }
+.pp-tag{ color:var(--tan); font-size:13px; font-weight:bold; text-align:center; }
+.pp-empty{ color:rgba(255,255,255,0.32); font-size:12px; }
+
+/* меню выбора роли — крупные карточки */
+.role-btn{ display:flex; align-items:center; gap:14px; width:100%; padding:20px 18px; margin-bottom:14px; border:1px solid var(--line); border-radius:16px; background:var(--kombu-2); color:var(--bone); text-align:left; cursor:pointer; transition:transform .1s ease; }
+.role-btn:active{ transform:scale(0.98); }
+.role-btn:disabled{ opacity:0.4; }
+.role-ico{ flex:0 0 52px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; background:var(--moss); color:#1c2114; border-radius:14px; font-size:26px; }
+.role-name{ font-size:20px; font-weight:bold; }
+.role-desc{ font-size:13px; color:var(--bone-dim); margin-top:3px; }
+
+/* меню Кафедры — крупные кнопки, выделенные Медиа/Библия */
+.menu-btn{ display:flex; align-items:center; gap:14px; width:100%; padding:20px 18px; margin-bottom:12px; border:1px solid var(--line); border-radius:14px; background:var(--kombu-2); color:var(--bone); font-size:18px; cursor:pointer; }
+.menu-btn .menu-ico{ flex:0 0 30px; font-size:24px; text-align:center; }
+.menu-btn.feat{ background:var(--moss); color:#1c2114; border-color:transparent; font-weight:bold; }
+
+/* Сцена — крупнее панель + крестик */
+.quad-big{ gap:12px; }
+.quad-big .q-repeat, .quad-big .q-next, .quad-big .q-prev, .quad-big .q-exit{ min-height:78px; font-size:22px; }
+.stage-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.stage-head .stage-ptitle{ margin:0; }
+.stage-close{ background:rgba(255,255,255,0.14); color:var(--bone); border:none; width:36px; height:36px; border-radius:9px; font-size:16px; cursor:pointer; }
+
+/* Розклад — календарь + карточки + пикеры */
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-title{ font-weight:bold; font-size:16px; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-dow{ text-align:center; font-size:11px; color:var(--bone-dim); padding:4px 0; }
+.cal-cell{ aspect-ratio:1/1; min-height:38px; border-radius:8px; background:var(--kombu-2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; position:relative; }
+.cal-cell.empty{ background:transparent; cursor:default; }
+.cal-cell.today{ outline:2px solid var(--moss); outline-offset:-2px; }
+.cal-cell.has{ background:var(--moss); color:#1c2114; }
+.cal-num{ font-size:14px; }
+.cal-dot{ width:6px; height:6px; border-radius:50%; background:var(--bone); }
+.cal-cell.has .cal-dot{ background:#1c2114; }
+.cal-dot.act{ background:var(--tan); box-shadow:0 0 0 2px rgba(207,187,153,0.45); }
+.srv-card{ background:var(--kombu-2); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; position:relative; }
+.srv-card.active{ border-color:var(--tan); }
+.srv-when{ font-weight:bold; margin-bottom:6px; padding-right:70px; }
+.srv-line{ font-size:13px; color:var(--bone-dim); margin-top:3px; }
+.srv-badge{ position:absolute; top:12px; right:12px; background:var(--tan); color:#2a2113; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:10px; }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--kombu-2); color:var(--bone); cursor:pointer; font-size:14px; }
+.chip.on{ background:var(--moss); color:#1c2114; border-color:transparent; }
+.pick-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; background:var(--kombu-2); border-radius:8px; margin-bottom:6px; }
+
+/* Розклад — типи, легенда, крупний календар, повноекранна карточка */
+.legend{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+.legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--bone-dim); }
+.legend-dot{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+.type-badge{ display:inline-block; color:#fff; font-size:11px; font-weight:bold; padding:3px 10px; border-radius:10px; margin-bottom:8px; }
+.cal-cell{ min-height:52px; }
+.cal-dots{ display:flex; gap:3px; }
+.cal-dot2{ width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.9); }
+.cal-dot2.act{ background:var(--tan); box-shadow:0 0 0 2px rgba(207,187,153,0.5); }
+.day-panel{ position:fixed; inset:0; z-index:60; background:var(--kombu); display:flex; flex-direction:column; transform:translateY(6%); opacity:0; transition:transform .26s ease, opacity .26s ease; }
+.day-panel.open{ transform:translateY(0); opacity:1; }
+.srv-detail{ background:var(--kombu-2); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; position:relative; }
+.srv-sec{ font-weight:bold; margin-top:12px; margin-bottom:4px; color:var(--tan); }
+.srv-item{ font-size:14px; padding:3px 0; color:var(--bone); }
+.people-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+.person-card{ background:var(--kombu-2); border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; cursor:pointer; }
+.person-av{ width:64px; height:64px; border-radius:50%; margin:0 auto 8px; background:var(--moss); color:#1c2114; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:bold; overflow:hidden; text-transform:uppercase; }
+.person-av img{ width:100%; height:100%; object-fit:cover; }
+.person-name{ font-weight:bold; font-size:15px; }
+.person-min{ font-size:12px; color:var(--bone-dim); margin-top:3px; }

@@ -65,9 +65,10 @@
   };
 
   // --- права ---
-  A.canAdd   = function(){ return !!A.getLevel(); };                                   // любой вошедший
-  A.canEdit  = function(){ const l = A.getLevel(); return l === 'stage' || l === 'lime'; };
-  A.canAdmin = function(){ return A.getLevel() === 'lime'; };
+  A.canAdd    = function(){ return !!A.getLevel(); };                                   // любой вошедший
+  A.canEdit   = function(){ const l = A.getLevel(); return l === 'stage' || l === 'pastor' || l === 'lime'; };
+  A.canPastor = function(){ const l = A.getLevel(); return l === 'pastor' || l === 'lime'; };  // расписание/программы/бэкапы/QR
+  A.canAdmin  = function(){ return A.getLevel() === 'lime'; };
 
   // --- блокировка (кулдаун 3 мин) ---
   A.isLocked = function(){ return Date.now() < WS.ls.get('lock_until', 0); };

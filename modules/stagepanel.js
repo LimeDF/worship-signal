@@ -12,8 +12,11 @@
     if(!WS.Auth || !WS.Auth.canEdit()) return;   // только уровень «Сцена» (OPERATOR/Lime)
     const panel = WS.UI.el('div',{class:'stage-panel'});
     panel.appendChild(WS.UI.el('div',{class:'stage-handle', onClick:()=>panel.classList.remove('open')}));
-    panel.appendChild(WS.UI.el('div',{class:'stage-ptitle'}, WS.t('stage_title')));
-    panel.appendChild(WS.UI.el('div',{class:'quad'},
+    panel.appendChild(WS.UI.el('div',{class:'stage-head'},
+      WS.UI.el('div',{class:'stage-ptitle'}, WS.t('stage_title')),
+      WS.UI.el('button',{class:'stage-close', onClick:()=>panel.classList.remove('open')}, '✕')
+    ));
+    panel.appendChild(WS.UI.el('div',{class:'quad quad-big'},
       WS.UI.el('button',{class:'q-repeat', onClick:()=>sig('repeat')}, '↻', WS.UI.el('small',null, WS.t('q_repeat'))),
       WS.UI.el('button',{class:'q-next',   onClick:()=>sig('next')},   '→', WS.UI.el('small',null, WS.t('q_next'))),
       WS.UI.el('button',{class:'q-prev',   onClick:()=>sig('prev')},   '←', WS.UI.el('small',null, WS.t('q_prev'))),

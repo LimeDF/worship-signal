@@ -43,7 +43,7 @@
       const body = WS.UI.el('div',{class:'col'});
       const m = WS.UI.modal({ title:d.name, body, buttons:[{ label:WS.t('close'), kind:'ghost' }] });
       body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('change_level')));
-      [['regular',WS.t('lvl_regular')],['stage',WS.t('lvl_stage')],['lime',WS.t('lvl_lime')]].forEach(function(pair){
+      [['regular',WS.t('lvl_regular')],['stage',WS.t('lvl_stage')],['pastor',WS.t('lvl_pastor')],['lime',WS.t('lvl_lime')]].forEach(function(pair){
         const lv = pair[0], label = pair[1], cur = (d.level === lv);
         body.appendChild(WS.UI.el('button',{class:'btn ' + (cur ? '' : 'btn-ghost'), style:{marginBottom:'8px'}, onClick:function(){
           WS.Presence.setLevel(d.id, lv); WS.UI.toast(WS.t('command_sent', label)); m.close();
@@ -60,6 +60,6 @@
     WS.Presence.ping();
   };
 
-  function levelName(l){ return { regular:WS.t('lvl_regular'), stage:WS.t('lvl_stage'), lime:WS.t('lvl_lime') }[l] || '—'; }
+  function levelName(l){ return { regular:WS.t('lvl_regular'), stage:WS.t('lvl_stage'), pastor:WS.t('lvl_pastor'), lime:WS.t('lvl_lime') }[l] || '—'; }
   function roleName(r){ return { operator:WS.t('r_operator'), chair:WS.t('r_chair'), stage:WS.t('r_stage'), hymns:WS.t('r_hymns') }[r] || r; }
 })();

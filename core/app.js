@@ -93,7 +93,7 @@
 
     WS.Sync.connect();          // связь включается СРАЗУ (SSE + опрос), не ждём историю
 
-    ['songs','psalms','texts','bible','announcements','media','programs'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
+    ['songs','psalms','texts','bible','announcements','media','programs','services','people'].forEach(c => { WS.Data.load(c).catch(()=>{}); });
     WS.Data.load('config').then(applyConfig).catch(()=>{});   // общий Google Client ID
 
     if(!WS.Auth.getLevel()) WS.App.show('pin');

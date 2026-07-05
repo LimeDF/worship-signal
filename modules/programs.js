@@ -45,7 +45,8 @@
 
   function renderList(content){
     WS.UI.clear(content);
-    if(WS.Auth.canEdit()) content.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'14px'}, onClick:()=>{ current = { id:WS.Data.newId(), title:'', date:'', items:[], _saved:false }; WS.App.show('programs', {view:'edit'}); }}, WS.t('create_program')));
+    content.appendChild(WS.UI.el('button',{class:'btn btn-tan', style:{marginBottom:'12px'}, onClick:()=>WS.App.show('services')}, '📅 ' + WS.t('schedule_srv')));
+    if(WS.Auth.canPastor()) content.appendChild(WS.UI.el('button',{class:'btn', style:{marginBottom:'14px'}, onClick:()=>{ current = { id:WS.Data.newId(), title:'', date:'', items:[], _saved:false }; WS.App.show('programs', {view:'edit'}); }}, WS.t('create_program')));
     const items = (WS.Data.items('programs') || []).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
     if(!items.length){ content.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('no_programs'))); return; }
     items.forEach(p => {
@@ -63,7 +64,7 @@
     WS.UI.clear(content);
     const bar = WS.UI.el('div',{class:'btn-row', style:{marginBottom:'12px'}});
     bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>WS.App.show('programs', {view:'list'})}, WS.t('back_programs')));
-    if(WS.Auth.canEdit()) bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>WS.App.show('programs', {view:'edit'})}, WS.t('edit')));
+    if(WS.Auth.canPastor()) bar.appendChild(WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>WS.App.show('programs', {view:'edit'})}, WS.t('edit')));
     content.appendChild(bar);
     if(current.date) content.appendChild(WS.UI.el('div',{class:'muted', style:{marginBottom:'10px'}}, current.date));
     if(!current.items || !current.items.length){ content.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('program_empty'))); return; }
@@ -205,7 +206,7 @@
       WS.UI.el('button',{class:'btn', onClick:save}, WS.t('save')),
       WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>WS.App.show('programs', {view: current._saved ? 'detail' : 'list'})}, WS.t('cancel'))
     ));
-    if(current._saved && WS.Auth.canEdit()) content.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del_program')));
+    if(current._saved && WS.Auth.canPastor()) content.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del_program')));
 
     async function save(){
       current.title = titleInp.value.trim(); current.date = dateInp.value;

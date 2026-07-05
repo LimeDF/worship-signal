@@ -18,17 +18,20 @@
     body.appendChild(WS.UI.el('div',{class:'spacer'}));
 
     const roles = [
-      { id:'operator', label:WS.t('r_operator'), desc:WS.t('r_operator_d') },
-      { id:'chair',    label:WS.t('r_chair'),    desc:WS.t('r_chair_d') },
-      { id:'hymns',    label:WS.t('r_hymns'),    desc:WS.t('r_hymns_d'), needStage:true },
-      { id:'programs', label:WS.t('r_programs'), desc:WS.t('r_programs_d') },
+      { id:'operator', label:WS.t('r_operator'), desc:WS.t('r_operator_d'), ico:'▷' },
+      { id:'chair',    label:WS.t('r_chair'),    desc:WS.t('r_chair_d'),    ico:'✝' },
+      { id:'hymns',    label:WS.t('r_hymns'),    desc:WS.t('r_hymns_d'),    ico:'♪', needStage:true },
+      { id:'programs', label:WS.t('r_programs'), desc:WS.t('r_programs_d'), ico:'▦' },
     ];
 
     const btns = [];
     roles.forEach(r => {
-      const b = WS.UI.el('button',{class:'btn btn-ghost', style:{flexDirection:'column', alignItems:'flex-start', gap:'2px', padding:'16px', marginBottom:'12px'}, onClick:()=>enter(r)},
-        WS.UI.el('div',{style:{fontSize:'18px', fontWeight:'bold'}}, r.label),
-        WS.UI.el('div',{class:'muted', style:{fontSize:'13px'}}, r.desc)
+      const b = WS.UI.el('button',{class:'role-btn', onClick:()=>enter(r)},
+        WS.UI.el('div',{class:'role-ico'}, r.ico),
+        WS.UI.el('div',{style:{minWidth:'0'}},
+          WS.UI.el('div',{class:'role-name'}, r.label),
+          WS.UI.el('div',{class:'role-desc'}, r.desc)
+        )
       );
       btns.push(b); body.appendChild(b);
     });

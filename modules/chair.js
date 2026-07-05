@@ -17,23 +17,31 @@
     if(view === 'menu'){
       screen.appendChild(header(WS.t('chair_title'), ()=>WS.App.show('role')));
       const b = WS.UI.el('div',{class:'pad col'});
-      [['media',WS.t('m_media')],['text',WS.t('m_text')],['announce',WS.t('m_announce')],['chat',WS.t('m_chat')],['bible',WS.t('m_bible')]].forEach(([v,label])=>{
-        b.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px', padding:'18px', fontSize:'18px'}, onClick:()=>{
-          if(v==='chat') WS.App.show('chat', { back:'chair' }); else WS.App.show('chair', { view:v });
-        }}, label));
+      const menu = [
+        { v:'media', label:WS.t('m_media'), ico:'▣', feat:true },
+        { v:'msgs',  label:WS.t('m_text_announce'), ico:'✎' },
+        { v:'bible', label:WS.t('m_bible'), ico:'✝', feat:true },
+        { v:'chat',  label:WS.t('m_chat'),  ico:'✉' },
+      ];
+      menu.forEach(m => {
+        b.appendChild(WS.UI.el('button',{class:'menu-btn' + (m.feat?' feat':''), onClick:()=>{
+          if(m.v==='chat') WS.App.show('chat', { back:'chair' }); else WS.App.show('chair', { view:m.v });
+        }}, WS.UI.el('span',{class:'menu-ico'}, m.ico), WS.UI.el('span',null, m.label)));
       });
       screen.appendChild(b); root.appendChild(screen); return;
     }
 
     const wrap = WS.UI.el('div',{class:'scroll grow pad'});
-    const titles = { text:WS.t('m_text'), announce:WS.t('m_announce'), media:WS.t('m_media'), bible:WS.t('m_bible') };
+    const titles = { msgs:WS.t('m_text_announce'), media:WS.t('m_media'), bible:WS.t('m_bible') };
     screen.appendChild(header(titles[view] || WS.t('chair_title'), ()=>WS.App.show('chair')));
     screen.appendChild(wrap); root.appendChild(screen);
 
-    if(view === 'text')     loadThen('texts',  ()=>renderItemList(wrap, 'texts'));
-    if(view === 'announce') loadThen('announcements', ()=>renderItemList(wrap, 'announcements'));
     if(view === 'media')    loadThen('media',  ()=>renderMedia(wrap));
     if(view === 'bible')    loadThen('bible',  ()=>renderBible(wrap));
+    if(view === 'msgs'){
+      WS.UI.clear(wrap); wrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('loading')));
+      Promise.all([WS.Data.load('announcements'), WS.Data.load('texts')]).then(()=>{ if(WS.state.screen==='chair'){ WS.UI.clear(wrap); renderMessages(wrap); } }).catch(()=>{ if(WS.state.screen==='chair'){ WS.UI.clear(wrap); renderMessages(wrap); } });
+    }
 
     function loadThen(coll, draw){
       WS.UI.clear(wrap); wrap.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('loading')));
@@ -90,6 +98,17 @@
       if(WS.Auth.canAdd()) row.appendChild(WS.UI.el('button',{class:'icon-btn', title:WS.t('edit'), onClick:()=>openItemEditor(wrap, coll, it)},'✎'));
       wrap.appendChild(row);
     });
+  }
+
+  // объединённый раздел «Текст і оголошення»
+  function renderMessages(wrap){
+    WS.UI.clear(wrap);
+    wrap.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'0 0 6px'}}, WS.t('m_announce')));
+    const annBox = WS.UI.el('div', null); wrap.appendChild(annBox);
+    renderItemList(annBox, 'announcements');
+    wrap.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'18px 0 6px'}}, WS.t('m_text')));
+    const txtBox = WS.UI.el('div', null); wrap.appendChild(txtBox);
+    renderItemList(txtBox, 'texts');
   }
 
   function openItemEditor(wrap, coll, existing){
@@ -314,9 +333,9 @@
       let idx = arr.findIndex(x => x.verse === startVerse); if(idx < 0) idx = 0;
       WS.UI.clear(listWrap);
       const actions = WS.UI.el('div',{class:'rd-actions'},
-        WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'0 0 auto'}, onClick:()=>showVerses(b, c)}, '←'),
-        WS.UI.el('button',{class:'btn', onClick:()=>emitOne(b, c, arr[idx].verse, results, 'screen')}, WS.t('bible_to_screen')),
-        WS.UI.el('button',{class:'btn btn-tan', onClick:()=>emitOne(b, c, arr[idx].verse, results, 'operator')}, WS.t('bible_to_operator'))
+        WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'1 1 0'}, onClick:()=>showVerses(b, c)}, '← ' + WS.t('back')),
+        WS.UI.el('button',{class:'btn', style:{flex:'1 1 0'}, onClick:()=>emitOne(b, c, arr[idx].verse, results, 'screen')}, WS.t('bible_to_screen')),
+        WS.UI.el('button',{class:'btn btn-tan', style:{flex:'1 1 0'}, onClick:()=>emitOne(b, c, arr[idx].verse, results, 'operator')}, WS.t('bible_to_operator'))
       );
       listWrap.appendChild(actions);
       const list = WS.UI.el('div', null); listWrap.appendChild(list);
