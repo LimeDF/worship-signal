@@ -93,8 +93,15 @@
   // авто-подгонка размера шрифта чтобы текст влез в контейнер (бинарный поиск)
   U.fitText = function(textEl, container, min, max){
     min = min || 14; max = max || 240;
-    const aH = container.clientHeight, aW = container.clientWidth;
-    if(aH <= 0 || aW <= 0) return;
+    let aH = container.clientHeight, aW = container.clientWidth;
+    try {
+      if(typeof getComputedStyle === 'function'){
+        const cs = getComputedStyle(container);
+        aH -= (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+        aW -= (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      }
+    } catch(e){}
+    if(!(aH > 0) || !(aW > 0)) return;
     let lo = min, hi = max, best = min;
     while(lo <= hi){
       const mid = (lo + hi) >> 1;
