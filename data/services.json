@@ -49,6 +49,31 @@
         }
       ],
       "active": true
+    },
+    {
+      "id": "imr878ksemsbd",
+      "date": "2026-07-05",
+      "time": "17:00",
+      "type": "prayer",
+      "place": "own",
+      "place_custom": "",
+      "blocks": [
+        {
+          "type": "prayer",
+          "people": [
+            "Yroslaw  Karnauch"
+          ],
+          "note": ""
+        },
+        {
+          "type": "songs",
+          "people": [
+            "Taras Logvis"
+          ],
+          "songs": []
+        }
+      ],
+      "active": false
     }
   ]
 }
