@@ -21,13 +21,14 @@
     inp.addEventListener('keydown', e => { if(e.key === 'Enter') submit(); });
 
     screen.appendChild(label);
-    screen.appendChild(inp);
-    screen.appendChild(WS.UI.el('div',{class:'spacer'}));
-    screen.appendChild(WS.UI.el('button',{class:'btn', style:{maxWidth:'320px'}, onClick:submit}, WS.t('login_btn')));
-    screen.appendChild(WS.UI.el('div',{class:'btn-row', style:{maxWidth:'320px', marginTop:'12px'}},
+    const colBox = WS.UI.el('div',{style:{width:'100%', maxWidth:'320px', display:'flex', flexDirection:'column', gap:'12px', alignItems:'stretch'}});
+    colBox.appendChild(inp);
+    colBox.appendChild(WS.UI.el('button',{class:'btn', onClick:submit}, WS.t('login_btn')));
+    colBox.appendChild(WS.UI.el('div',{class:'btn-row'},
       WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>{ location.hash='#watch'; location.reload(); }}, WS.t('follow_btn')),
-      WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'0 0 auto'}, onClick:()=>WS.Follow.showQR()},'QR')
+      WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'0 0 84px'}, onClick:()=>WS.Follow.showQR()},'QR')
     ));
+    screen.appendChild(colBox);
     root.appendChild(screen);
     setTimeout(()=>{ if(!locked) inp.focus(); }, 150);
 

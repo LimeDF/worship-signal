@@ -80,7 +80,7 @@
   }
 
   // резервная копия всех коллекций (кроме статичной Библии) одним JSON-файлом
-  const BACKUP_COLLECTIONS = ['songs','psalms','texts','announcements','media','programs'];
+  const BACKUP_COLLECTIONS = ['songs','psalms','texts','announcements','media','programs','services','people','config'];
   D.backup = async function(){
     const bundle = { schema:'worship-signal-backup', version:1, created:new Date().toISOString(), data:{} };
     BACKUP_COLLECTIONS.forEach(function(c){ bundle.data[c] = WS.Data.items(c) || []; });

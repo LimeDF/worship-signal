@@ -151,10 +151,11 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 @keyframes tin{ from{ opacity:0; transform:translateY(-8px);} to{opacity:1;transform:none;} }
 
 /* ---------- Модалки ---------- */
-.overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:flex; align-items:center; justify-content:center; padding:18px; }
-.modal{ background:var(--kombu); border:1px solid var(--line); border-radius:var(--radius); width:100%; max-width:420px; padding:18px; }
-.modal h3{ margin:0 0 10px; font-size:19px; }
-.modal .modal-body{ margin-bottom:16px; }
+.overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:flex; align-items:center; justify-content:center; padding:14px; }
+.modal{ background:var(--kombu); border:1px solid var(--line); border-radius:var(--radius); width:100%; max-width:440px; padding:16px; display:flex; flex-direction:column; max-height:calc(100dvh - 28px); box-sizing:border-box; }
+.modal h3{ margin:0 0 10px; font-size:19px; flex:none; }
+.modal .modal-body{ margin-bottom:14px; overflow-y:auto; min-height:0; flex:1 1 auto; -webkit-overflow-scrolling:touch; }
+.modal > .btn-row{ flex:none; }
 
 /* ---------- Проекционный экран ---------- */
 .proj-screen{ background:var(--black); color:#fff; }
@@ -250,10 +251,11 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .stage-ptitle{ text-align:center; font-size:13px; color:var(--bone-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
 
 /* оператор: предпросмотр проектора */
-.proj-preview{ flex:1.4 1 0; min-width:0; min-height:90px; background:#000; border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:6px; }
-.pp-text{ color:#fff; font-size:11px; line-height:1.25; white-space:pre-wrap; text-align:center; overflow:hidden; max-height:100%; }
-.pp-tag{ color:var(--tan); font-size:13px; font-weight:bold; text-align:center; }
-.pp-empty{ color:rgba(255,255,255,0.32); font-size:12px; }
+.proj-preview{ flex:1.4 1 0; min-width:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#000; align-self:flex-start; }
+.pv-stage{ position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
+.pv-stage .proj-text{ line-height:1.2; }
+.pv-stage .proj-iframe{ width:100%; height:100%; border:none; pointer-events:none; }
+.pp-empty{ color:rgba(255,255,255,0.32); font-size:12px; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
 
 /* меню выбора роли — крупные карточки */
 .role-btn{ display:flex; align-items:center; gap:14px; width:100%; padding:20px 18px; margin-bottom:14px; border:1px solid var(--line); border-radius:16px; background:var(--kombu-2); color:var(--bone); text-align:left; cursor:pointer; transition:transform .1s ease; }
@@ -324,3 +326,27 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .blk-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .blk-title{ font-weight:bold; color:var(--tan); }
 .blk-tools{ display:flex; gap:4px; }
+
+/* ── Глобальная адаптация / защита от переполнений ── */
+html, body{ overflow-x:hidden; }
+*{ box-sizing:border-box; }
+img, iframe, svg, video{ max-width:100%; }
+.btn, .chip, .menu-btn, .role-btn{ white-space:normal; word-break:break-word; }
+.row .main{ min-width:0; }
+.row .ttl, .row .prev{ overflow-wrap:anywhere; }
+.pick-row > span{ min-width:0; overflow-wrap:anywhere; }
+.input{ max-width:100%; }
+.tabs{ flex-wrap:wrap; }
+.btn-row{ flex-wrap:wrap; }
+.btn-row > .btn{ min-width:0; }
+.stage-panel{ padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
+.stage-fab{ bottom:calc(14px + env(safe-area-inset-bottom, 0px)); }
+.day-panel .pad{ padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
+@media (max-width:380px){
+  .cal-cell{ min-height:44px; }
+  .cal-num{ font-size:12px; }
+  .legend{ gap:8px; }
+  .role-ico{ flex-basis:44px; width:44px; height:44px; font-size:22px; }
+  .role-name{ font-size:18px; }
+  .quad-big .q-repeat, .quad-big .q-next, .quad-big .q-prev, .quad-big .q-exit{ min-height:64px; font-size:19px; }
+}

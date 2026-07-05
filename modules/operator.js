@@ -5,6 +5,67 @@
 
   let connDot = null, stageEl = null, lostSince = 0, wasLost = false, timers = [], wakeLock = null, splashStop = null, lastAutoTarget = 0;
 
+  // единый рендер содержимого проектора; возвращает stop-функцию для тикающих режимов
+  function renderStage(el, d){
+    WS.UI.clear(el);
+    if(!d || d.t === 'clear') return null;
+    if(d.t === 'splash'){ const h = WS.Splash.render(el, d); return h.stop; }
+    if(d.t === 'announce_loop'){
+      return WS.Loop.watch(d, (i) => {
+        WS.UI.clear(el);
+        const it = (d.items || [])[i] || {};
+        const content = (it.title ? it.title + '\n\n' : '') + (it.text || '');
+        const textEl = WS.UI.el('div',{class:'proj-text'}, content);
+        el.appendChild(textEl);
+        requestAnimationFrame(() => WS.UI.fitText(textEl, el, 6, 240));
+      }).stop;
+    }
+    if(d.t === 'media'){
+      if(d.driveId){
+        const fr = WS.UI.el('iframe',{class:'proj-iframe', src:'https://drive.google.com/file/d/'+d.driveId+'/preview', allow:'autoplay; fullscreen'});
+        el.appendChild(fr);
+      }
+      return null;
+    }
+    if(d.t === 'qr'){
+      const box = WS.UI.el('div');
+      Object.assign(box.style, { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'2vmin', height:'100%' });
+      if(WS.Follow && window.qrcode){
+        const holder = WS.UI.el('div',{style:{width:'56%', maxWidth:'420px'}});
+        const q = WS.Follow.qrEl(d.url, 10); // размер переопределим стилями
+        q.style.width = '100%'; q.style.height = 'auto'; q.style.aspectRatio = '1/1';
+        holder.appendChild(q); box.appendChild(holder);
+      }
+      box.appendChild(WS.UI.el('div',{style:{color:'#fff', fontSize:'3.4vmin', opacity:'0.85', textAlign:'center', padding:'0 4vmin'}}, d.caption || WS.t('qr_scan_hint')));
+      el.appendChild(box);
+      return null;
+    }
+    if(d.t === 'bible'){
+      const main = WS.UI.el('div');
+      Object.assign(main.style, { position:'absolute', left:'0', top:'0', right:'0', bottom:'0', display:'flex', flexDirection:'column', boxSizing:'border-box', padding:'2% 3% 7% 3%' });
+      el.appendChild(main);
+      if(d.ref) el.appendChild(WS.UI.el('div',{class:'proj-ref'}, d.ref));
+      if(d.bilingual && d.text_en){
+        const top = WS.UI.el('div',{class:'proj-half'}); const bot = WS.UI.el('div',{class:'proj-half'});
+        const t1 = WS.UI.el('div',{class:'proj-text'}, d.text || ''); const t2 = WS.UI.el('div',{class:'proj-text'}, d.text_en || '');
+        top.appendChild(t1); bot.appendChild(t2); main.appendChild(top); main.appendChild(bot);
+        requestAnimationFrame(() => { WS.UI.fitText(t1, top, 6, 150); WS.UI.fitText(t2, bot, 6, 150); });
+      } else {
+        const box = WS.UI.el('div',{class:'proj-half'}); const t = WS.UI.el('div',{class:'proj-text'}, d.text || '');
+        box.appendChild(t); main.appendChild(box);
+        requestAnimationFrame(() => WS.UI.fitText(t, box, 6, 240));
+      }
+      return null;
+    }
+    let content = '';
+    if(d.t === 'block'){ content = d.text || ''; if(d.showTranslation && d.translation) content += '\n\n' + d.translation; }
+    else if(d.t === 'text'){ content = d.body || ''; }
+    const textEl = WS.UI.el('div',{class:'proj-text'}, content);
+    el.appendChild(textEl);
+    requestAnimationFrame(() => WS.UI.fitText(textEl, el, 6, 260));
+    return null;
+  }
+
   // показать заставку с обратным отсчётом до начала служіння
   function emitSplash(){
     const cfg = WS.Cfg ? WS.Cfg.get() : {};
@@ -52,23 +113,21 @@
       svcBtn
     );
     const preview = WS.UI.el('div',{class:'proj-preview', title:WS.t('pp_title')});
+    const pvStage = WS.UI.el('div',{class:'pv-stage'});
+    preview.appendChild(pvStage);
     screen.appendChild(WS.UI.el('div',{class:'pad', style:{flex:'none'}},
       WS.UI.el('div',{style:{display:'flex', gap:'10px', alignItems:'stretch'}}, btns, preview)
     ));
 
+    // реальная мини-ретрансляция: тот же рендер, что и на проекторе
+    let pvStop = null, pvLast = null;
     function renderPreview(){
-      WS.UI.clear(preview);
       const d = WS.Projector.current;
-      if(!d || d.t === 'clear'){ preview.appendChild(WS.UI.el('div',{class:'pp-empty'}, WS.t('pp_empty'))); return; }
-      let tag = '', text = '';
-      if(d.t === 'block') text = d.text || '';
-      else if(d.t === 'text') text = d.body || '';
-      else if(d.t === 'bible') text = (d.ref ? d.ref + '\n' : '') + (d.text || '');
-      else if(d.t === 'media') tag = '▣ ' + (d.title || WS.t('m_media'));
-      else if(d.t === 'splash') tag = WS.t('show_splash');
-      else if(d.t === 'qr') tag = 'QR';
-      else if(d.t === 'announce_loop'){ const i = WS.Loop ? WS.Loop.index(d) : 0; text = ((d.items || [])[i] || {}).text || ''; }
-      preview.appendChild(WS.UI.el('div',{class: tag ? 'pp-tag' : 'pp-text'}, tag || text));
+      if(d === pvLast && d && d.t !== 'announce_loop' && d.t !== 'splash') return;   // без лишних перерисовок
+      pvLast = d;
+      if(pvStop){ pvStop(); pvStop = null; }
+      if(!d || d.t === 'clear'){ WS.UI.clear(pvStage); pvStage.appendChild(WS.UI.el('div',{class:'pp-empty'}, WS.t('pp_empty'))); return; }
+      pvStop = renderStage(pvStage, d);
     }
     renderPreview();
     timers.push(setInterval(renderPreview, 1000));
@@ -164,7 +223,7 @@
 
     root.appendChild(screen);
     timers.push(setInterval(() => { if(connDot) Object.assign(connDot.style, dotStyle(WS.Sync.isLive())); }, 2000));
-    WS.state._cleanup = () => { WS.Log.offAdd(); };
+    WS.state._cleanup = () => { WS.Log.offAdd(); if(pvStop){ try{ pvStop(); }catch(e){} pvStop = null; } };
   }
 
   function renderLog(wrap){
@@ -195,61 +254,7 @@
       if(!stageEl) return;
       if(splashStop){ splashStop(); splashStop = null; }
       if(wasLost){ WS.UI.clear(stageEl); return; }
-      WS.UI.clear(stageEl);
-      const d = WS.Projector.current;
-      if(!d) return;
-      if(d.t === 'splash'){ const h = WS.Splash.render(stageEl, d); splashStop = h.stop; return; }
-      if(d.t === 'announce_loop'){
-        splashStop = WS.Loop.watch(d, (i) => {
-          WS.UI.clear(stageEl);
-          const it = (d.items || [])[i] || {};
-          const content = (it.title ? it.title + '\n\n' : '') + (it.text || '');
-          const textEl = WS.UI.el('div',{class:'proj-text'}, content);
-          stageEl.appendChild(textEl);
-          requestAnimationFrame(() => WS.UI.fitText(textEl, stageEl, 16, 240));
-        }).stop;
-        return;
-      }
-      if(d.t === 'media'){
-        if(d.driveId){
-          const fr = WS.UI.el('iframe',{class:'proj-iframe', src:'https://drive.google.com/file/d/'+d.driveId+'/preview', allow:'autoplay; fullscreen'});
-          fr.style.width = stageEl.style.width; fr.style.height = stageEl.style.height; stageEl.appendChild(fr);
-        }
-        return;
-      }
-      // QR для залу (follow-along)
-      if(d.t === 'qr'){
-        const box = WS.UI.el('div');
-        Object.assign(box.style, { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'2vmin', height:'100%' });
-        if(WS.Follow && window.qrcode) box.appendChild(WS.Follow.qrEl(d.url, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.5)));
-        box.appendChild(WS.UI.el('div',{style:{color:'#fff', fontSize:'3.4vmin', opacity:'0.85', textAlign:'center', padding:'0 4vmin'}}, d.caption || WS.t('qr_scan_hint')));
-        stageEl.appendChild(box);
-        return;
-      }
-      // ── Библия: текст (при двух языках — сплит), ссылка тонким шрифтом внизу справа ──
-      if(d.t === 'bible'){
-        const main = WS.UI.el('div');
-        Object.assign(main.style, { position:'absolute', left:'0', top:'0', right:'0', bottom:'0', display:'flex', flexDirection:'column', boxSizing:'border-box', padding:'2% 3% 7% 3%' });
-        stageEl.appendChild(main);
-        if(d.ref) stageEl.appendChild(WS.UI.el('div',{class:'proj-ref'}, d.ref));
-        if(d.bilingual && d.text_en){
-          const top = WS.UI.el('div',{class:'proj-half'}); const bot = WS.UI.el('div',{class:'proj-half'});
-          const t1 = WS.UI.el('div',{class:'proj-text'}, d.text || ''); const t2 = WS.UI.el('div',{class:'proj-text'}, d.text_en || '');
-          top.appendChild(t1); bot.appendChild(t2); main.appendChild(top); main.appendChild(bot);
-          requestAnimationFrame(() => { WS.UI.fitText(t1, top, 12, 150); WS.UI.fitText(t2, bot, 12, 150); });
-        } else {
-          const box = WS.UI.el('div',{class:'proj-half'}); const t = WS.UI.el('div',{class:'proj-text'}, d.text || '');
-          box.appendChild(t); main.appendChild(box);
-          requestAnimationFrame(() => WS.UI.fitText(t, box, 16, 240));
-        }
-        return;
-      }
-      let content = '';
-      if(d.t === 'block'){ content = d.text || ''; if(d.showTranslation && d.translation) content += '\n\n' + d.translation; }
-      else if(d.t === 'text'){ content = d.body || ''; }
-      const textEl = WS.UI.el('div',{class:'proj-text'}, content);
-      stageEl.appendChild(textEl);
-      requestAnimationFrame(() => WS.UI.fitText(textEl, stageEl, 16, 260));
+      splashStop = renderStage(stageEl, WS.Projector.current);
     }
 
     build();

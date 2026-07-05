@@ -11,7 +11,7 @@
 
   // элемент с QR-кодом (тёмный на белом)
   F.qrEl = function(text, sizePx){
-    const box = WS.UI.el('div',{style:{background:'#fff', padding:'14px', borderRadius:'12px', width:sizePx+'px', height:sizePx+'px', margin:'0 auto', boxSizing:'content-box', display:'flex', alignItems:'center', justifyContent:'center'}});
+    const box = WS.UI.el('div',{style:{background:'#fff', padding:'5%', borderRadius:'12px', width:sizePx+'px', height:sizePx+'px', margin:'0 auto', boxSizing:'border-box', display:'flex', alignItems:'center', justifyContent:'center'}});
     try {
       const q = window.qrcode(0, 'M'); q.addData(text || ' '); q.make();
       box.innerHTML = q.createSvgTag({ scalable:true, margin:0 });
@@ -65,7 +65,7 @@
       WS.UI.clear(bar);
       bar.appendChild(ctrlBtn('A−', ()=>{ scale = Math.max(0.6, scale-0.15); WS.ls.set('watch_scale', String(scale)); paint(); }));
       bar.appendChild(ctrlBtn('A+', ()=>{ scale = Math.min(2.6, scale+0.15); WS.ls.set('watch_scale', String(scale)); paint(); }));
-      bar.appendChild(ctrlBtn((sub?'☑ ':'☐ ')+WS.t('watch_sub'), ()=>{ sub = !sub; WS.ls.set('watch_sub', sub?'1':''); paint(); }));
+      bar.appendChild(ctrlBtn((sub?'☑ ':'☐ ')+WS.t('watch_sub'), ()=>{ sub = !sub; WS.ls.set('watch_sub', sub?'1':''); buildBar(); paint(); }));
       bar.appendChild(ctrlBtn('⇅ '+WS.t('watch_swap'), ()=>{ swap = !swap; WS.ls.set('watch_swap', swap?'1':''); paint(); }));
       bar.appendChild(ctrlBtn(WS.I18n.getLang()==='en'?'УКР':'ENG', ()=>{ WS.I18n.setLang(WS.I18n.getLang()==='en'?'uk':'en'); buildBar(); }));
       bar.appendChild(ctrlBtn('⛶', ()=>{ try { if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch(e){} }));
@@ -79,8 +79,8 @@
     }
 
     let splashStop = null;
+    buildBar();
     function paint(){
-      buildBar();
       if(splashStop){ splashStop(); splashStop = null; }
       WS.UI.clear(content);
       const d = WS.Projector.current;
