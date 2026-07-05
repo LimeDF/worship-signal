@@ -80,28 +80,38 @@
       WS.Data.load('services').then(() => {
         const svc = WS.Services ? WS.Services.active() : null;
         if(!svc){ WS.UI.toast(WS.t('srv_no_active')); return; }
+        if(WS.Services.migrate) WS.Services.migrate(svc);
+        const blocks = svc.blocks || [];
         const b = WS.UI.el('div', null);
-        b.appendChild(WS.UI.el('div',{class:'muted', style:{marginBottom:'10px', fontSize:'13px'}}, (svc.topic || '') + (svc.preacher ? ('  ·  ' + svc.preacher) : '')));
-        if(svc.worship_songs && svc.worship_songs.length){
-          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'6px 0'}}, WS.t('srv_worship')));
-          svc.worship_songs.forEach(r => b.appendChild(WS.UI.el('div',{class:'row', onClick:()=>openSong(r)},
-            WS.UI.el('div',{class:'num'}, '#'+(r.number||'')), WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, r.title||'')), WS.UI.el('span',{class:'muted'},'›'))));
-        }
-        if(svc.scriptures && svc.scriptures.length){
-          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'10px 0 6px'}}, WS.t('srv_scriptures')));
-          svc.scriptures.forEach(sc => b.appendChild(WS.UI.el('div',{class:'row'},
-            WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, sc.ref)),
-            WS.UI.el('button',{class:'btn btn-tan', style:{flex:'0 0 auto', width:'auto', padding:'8px 12px'}, onClick:()=>sendScr(sc)}, WS.t('bible_to_screen')))));
-        }
-        if(svc.media && svc.media.length){
-          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'10px 0 6px'}}, WS.t('m_media')));
-          svc.media.forEach(mm => b.appendChild(WS.UI.el('div',{class:'row'},
-            WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[mm.type]||'•')),
-            WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, mm.title||WS.t('m_media'))),
-            WS.UI.el('button',{class:'btn btn-tan', style:{flex:'0 0 auto', width:'auto', padding:'8px 12px'}, onClick:()=>{ if(!mm.drive_id) return; const p={t:'media', mediaType:mm.type||'video', driveId:mm.drive_id, title:mm.title||''}; WS.Sync.send(p); WS.Projector.set(p); WS.UI.toast(WS.t('sent_projector')); }}, WS.t('bible_to_screen')))));
-        }
+        b.appendChild(WS.UI.el('div',{class:'muted', style:{marginBottom:'10px', fontSize:'13px'}}, (svc.time||'') + '  ·  ' + (WS.Services.placeLabel ? WS.Services.placeLabel(svc) : '')));
+        if(!blocks.length) b.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('srv_none_day')));
+        blocks.forEach(blk => {
+          b.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'8px 0 6px'}}, WS.t('blk_'+blk.type) + (blk.person ? ('  ·  ' + blk.person) : '')));
+          if(blk.type === 'songs'){
+            (blk.songs||[]).forEach(r => b.appendChild(WS.UI.el('div',{class:'row', onClick:()=>openSong(r)},
+              WS.UI.el('div',{class:'num'}, '#'+(r.number||'')), WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, r.title||'')), WS.UI.el('span',{class:'muted'},'›'))));
+          } else if(blk.type === 'preaching'){
+            if(blk.topic) b.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px', padding:'2px 0 6px'}}, blk.topic));
+            (blk.scriptures||[]).forEach(sc => b.appendChild(WS.UI.el('div',{class:'row'},
+              WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, sc.ref)),
+              WS.UI.el('button',{class:'btn btn-tan', style:{flex:'0 0 auto', width:'auto', padding:'8px 12px'}, onClick:()=>sendScr(sc)}, WS.t('bible_to_screen')))));
+            (blk.media||[]).forEach(mm => b.appendChild(mediaRow(mm)));
+          } else if(blk.type === 'media'){
+            (blk.media||[]).forEach(mm => b.appendChild(mediaRow(mm)));
+          } else if(blk.type === 'prayer' && blk.note){
+            b.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px'}}, blk.note));
+          } else if(blk.type === 'note' && blk.text){
+            b.appendChild(WS.UI.el('div',{class:'muted', style:{fontSize:'13px'}}, blk.text));
+          }
+        });
         WS.UI.modal({ title:WS.t('srv_service'), body:b, buttons:[{ label:WS.t('close'), kind:'ghost' }] });
       }).catch(()=>{});
+    }
+    function mediaRow(mm){
+      return WS.UI.el('div',{class:'row'},
+        WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[mm.type]||'•')),
+        WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, mm.title||WS.t('m_media'))),
+        WS.UI.el('button',{class:'btn btn-tan', style:{flex:'0 0 auto', width:'auto', padding:'8px 12px'}, onClick:()=>{ if(!mm.drive_id) return; const p={t:'media', mediaType:mm.type||'video', driveId:mm.drive_id, title:mm.title||''}; WS.Sync.send(p); WS.Projector.set(p); WS.UI.toast(WS.t('sent_projector')); }}, WS.t('bible_to_screen')));
     }
     function openSong(r){
       const item = (WS.Data.items(r.coll)||[]).find(i=>i.id===r.id);

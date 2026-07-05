@@ -10,6 +10,24 @@
     { id:'other',   color:'#b0682f' }    // помаранчевий — резерв
   ];
   function typeColor(t){ const f = TYPES.find(x=>x.id===t); return f ? f.color : TYPES[0].color; }
+  const BLK_ORDER = ['songs','prayer','preaching','media','note'];
+  const BLK_MIN = { songs:'worship', prayer:'prayer', preaching:'preaching', media:'media', note:null };
+  function newBlock(t){
+    if(t==='songs') return { type:'songs', person:'', songs:[] };
+    if(t==='prayer') return { type:'prayer', person:'', note:'' };
+    if(t==='preaching') return { type:'preaching', person:'', topic:'', scriptures:[], media:[] };
+    if(t==='media') return { type:'media', person:'', media:[] };
+    return { type:'note', text:'' };
+  }
+  // миграция старых служений (структурные поля -> блоки)
+  function migrate(s){
+    if(Array.isArray(s.blocks)) return s;
+    const b = [];
+    if((s.worship_songs && s.worship_songs.length) || s.worship_leader) b.push({ type:'songs', person:s.worship_leader||'', songs:s.worship_songs||[] });
+    if(s.preacher || s.topic || (s.scriptures && s.scriptures.length)) b.push({ type:'preaching', person:s.preacher||'', topic:s.topic||'', scriptures:s.scriptures||[], media:[] });
+    if(s.media && s.media.length) b.push({ type:'media', person:'', media:s.media });
+    s.blocks = b; return s;
+  }
   function pad(n){ return (n<10?'0':'')+n; }
   function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
   function todayStr(){ return ymd(new Date()); }
@@ -80,13 +98,15 @@
     }
 
     function card(s){
+      migrate(s);
       const c = WS.UI.el('div',{class:'srv-card'+(s.active?' active':'')});
-      c.appendChild(WS.UI.el('div',{class:'srv-when'}, fmtDate(s.date)+'  ·  '+(s.time||'')+'  ·  '+placeLabel(s)));
+      c.appendChild(WS.UI.el('span',{class:'type-badge', style:{background:typeColor(s.type)}}, WS.t('st_'+(s.type||'service'))));
       if(s.active) c.appendChild(WS.UI.el('span',{class:'srv-badge'}, WS.t('srv_active')));
-      const lines=[];
-      if(s.worship_leader) lines.push(WS.t('srv_worship')+': '+s.worship_leader+(s.worship_songs&&s.worship_songs.length?(' ('+s.worship_songs.length+')'):''));
-      if(s.preacher) lines.push(WS.t('srv_preach')+': '+s.preacher+(s.topic?(' — '+s.topic):''));
-      lines.forEach(l=> c.appendChild(WS.UI.el('div',{class:'srv-line'}, l)));
+      c.appendChild(WS.UI.el('div',{class:'srv-when'}, fmtDate(s.date)+'  ·  '+(s.time||'')+'  ·  '+placeLabel(s)));
+      (s.blocks||[]).forEach(b=>{
+        let extra=''; if(b.type==='songs') extra=' ('+(b.songs||[]).length+')'; if(b.type==='preaching' && b.topic) extra=' — '+b.topic;
+        c.appendChild(WS.UI.el('div',{class:'srv-line'}, WS.t('blk_'+b.type)+(b.person?(': '+b.person):'')+extra));
+      });
       if(canEdit){
         c.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'10px'}},
           WS.UI.el('button',{class:'btn'+(s.active?' btn-ghost':''), onClick:()=>activate(s)}, s.active?WS.t('srv_deactivate'):WS.t('srv_activate')),
@@ -114,22 +134,20 @@
       requestAnimationFrame(()=> overlay.classList.add('open'));
     }
     function detailCard(s){
+      migrate(s);
       const c = WS.UI.el('div',{class:'srv-detail'});
       c.appendChild(WS.UI.el('span',{class:'type-badge', style:{background:typeColor(s.type)}}, WS.t('st_'+(s.type||'service'))));
       if(s.active) c.appendChild(WS.UI.el('span',{class:'srv-badge'}, WS.t('srv_active')));
       c.appendChild(WS.UI.el('div',{class:'srv-when'}, (s.time||'') + '  ·  ' + placeLabel(s)));
-      if(s.worship_leader || (s.worship_songs && s.worship_songs.length)){
-        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('srv_worship') + (s.worship_leader ? (': ' + s.worship_leader) : '')));
-        (s.worship_songs||[]).forEach(r=> c.appendChild(WS.UI.el('div',{class:'srv-item'}, '♪  #' + (r.number||'') + ' ' + (r.title||''))));
-      }
-      if(s.preacher || s.topic || (s.scriptures && s.scriptures.length)){
-        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('srv_preach') + (s.preacher ? (': ' + s.preacher) : '') + (s.topic ? (' — ' + s.topic) : '')));
-        (s.scriptures||[]).forEach(r=> c.appendChild(WS.UI.el('div',{class:'srv-item'}, '✝  ' + r.ref)));
-      }
-      if(s.media && s.media.length){
-        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('m_media')));
-        s.media.forEach(r=> c.appendChild(WS.UI.el('div',{class:'srv-item'}, '▣  ' + (r.title||''))));
-      }
+      const item = (txt)=> c.appendChild(WS.UI.el('div',{class:'srv-item'}, txt));
+      (s.blocks||[]).forEach(b=>{
+        c.appendChild(WS.UI.el('div',{class:'srv-sec'}, WS.t('blk_'+b.type) + (b.person ? (': ' + b.person) : '')));
+        if(b.type==='songs') (b.songs||[]).forEach(r=> item('♪  #'+(r.number||'')+' '+(r.title||'')));
+        else if(b.type==='preaching'){ if(b.topic) item('— '+b.topic); (b.scriptures||[]).forEach(r=> item('✝  '+r.ref)); (b.media||[]).forEach(r=> item('▣  '+(r.title||''))); }
+        else if(b.type==='prayer'){ if(b.note) item(b.note); }
+        else if(b.type==='media') (b.media||[]).forEach(r=> item('▣  '+(r.title||'')));
+        else if(b.type==='note'){ if(b.text) item(b.text); }
+      });
       if(canEdit){
         c.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'14px'}},
           WS.UI.el('button',{class:'btn'+(s.active?' btn-ghost':''), onClick:()=>{ activate(s); closeOverlays(); }}, s.active?WS.t('srv_deactivate'):WS.t('srv_activate')),
@@ -153,18 +171,18 @@
       });
     }
 
-    // ── Редактор служіння ──
+    // ── Редактор служіння (блочний) ──
+    function peopleDatalist(ministry, id){
+      const src0 = WS.People ? WS.People.forMinistry(ministry) : [];
+      const src = (src0 && src0.length) ? src0 : (WS.People ? WS.People.list() : []);
+      if(!src.length) return null;
+      const dl = document.createElement('datalist'); dl.id = id + '_' + Math.random().toString(36).slice(2,6);
+      src.forEach(p=>{ const o=document.createElement('option'); o.value=WS.People.name(p); dl.appendChild(o); });
+      return dl;
+    }
     function openEditor(existing, dateStr){
-      const m = existing ? JSON.parse(JSON.stringify(existing)) : { id:WS.Data.newId(), date:dateStr||todayStr(), time:'10:00', type:'service', place:'own', place_custom:'', worship_leader:'', worship_songs:[], preacher:'', topic:'', scriptures:[], media:[], active:false };
-      if(!m.type) m.type = 'service';
-      function peopleDatalist(ministry, id){
-        const src0 = WS.People ? WS.People.forMinistry(ministry) : [];
-        const src = (src0 && src0.length) ? src0 : (WS.People ? WS.People.list() : []);
-        if(!src.length) return null;
-        const dl = document.createElement('datalist'); dl.id = id;
-        src.forEach(p=>{ const o=document.createElement('option'); o.value=WS.People.name(p); dl.appendChild(o); });
-        return dl;
-      }
+      const m = existing ? migrate(JSON.parse(JSON.stringify(existing))) : { id:WS.Data.newId(), date:dateStr||todayStr(), time:'10:00', type:'service', place:'own', place_custom:'', blocks:[], active:false };
+      if(!m.type) m.type='service'; if(!Array.isArray(m.blocks)) m.blocks=[];
       WS.UI.clear(body);
       body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:renderCal}, '← '+WS.t('back')));
 
@@ -185,43 +203,54 @@
       function drawPl(){ WS.UI.clear(pl); P.forEach(p=> pl.appendChild(WS.UI.el('button',{class:'chip'+(m.place===p?' on':''), onClick:()=>{ m.place=p; customInp.style.display=p==='custom'?'':'none'; drawPl(); }}, WS.t('pl_'+p)))); }
       drawPl(); body.appendChild(pl); body.appendChild(customInp);
 
-      // прославление
-      body.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'16px 0 6px'}}, WS.t('srv_worship')));
-      const wl=WS.UI.el('input',{class:'input', placeholder:WS.t('srv_leader_ph'), value:m.worship_leader}); wl.addEventListener('input',()=>m.worship_leader=wl.value); body.appendChild(wl);
-      const wlDl=peopleDatalist('worship','dl_worship'); if(wlDl){ wl.setAttribute('list', wlDl.id); body.appendChild(wlDl); }
-      const songsBox=WS.UI.el('div',{style:{marginTop:'8px'}}); body.appendChild(songsBox);
-      function drawSongs(){ WS.UI.clear(songsBox);
-        m.worship_songs.forEach((r,i)=> songsBox.appendChild(WS.UI.el('div',{class:'pick-row'},
-          WS.UI.el('span',null,'#'+(r.number||'')+' '+(r.title||'')),
-          WS.UI.el('button',{class:'icon-btn', onClick:()=>{ m.worship_songs.splice(i,1); drawSongs(); }},'✕'))));
-        songsBox.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'6px'}, onClick:()=>pickSongs(m,drawSongs)}, '+ '+WS.t('srv_add_songs')));
+      body.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'18px 0 8px'}}, WS.t('srv_blocks')));
+      const blocksBox=WS.UI.el('div', null); body.appendChild(blocksBox);
+      function drawBlocks(){
+        WS.UI.clear(blocksBox);
+        m.blocks.forEach((b,i)=> blocksBox.appendChild(blockCard(b,i)));
+        blocksBox.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:addBlock}, '+ '+WS.t('blk_add')));
       }
-      drawSongs();
-
-      // проповедь
-      body.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'16px 0 6px'}}, WS.t('srv_preach')));
-      const pr=WS.UI.el('input',{class:'input', placeholder:WS.t('srv_preacher_ph'), value:m.preacher}); pr.addEventListener('input',()=>m.preacher=pr.value); body.appendChild(pr);
-      const prDl=peopleDatalist('preaching','dl_preach'); if(prDl){ pr.setAttribute('list', prDl.id); body.appendChild(prDl); }
-      const tp=WS.UI.el('input',{class:'input', placeholder:WS.t('srv_topic_ph'), value:m.topic, style:{marginTop:'8px'}}); tp.addEventListener('input',()=>m.topic=tp.value); body.appendChild(tp);
-      const scrBox=WS.UI.el('div',{style:{marginTop:'8px'}}); body.appendChild(scrBox);
-      function drawScr(){ WS.UI.clear(scrBox);
-        m.scriptures.forEach((r,i)=> scrBox.appendChild(WS.UI.el('div',{class:'pick-row'},
-          WS.UI.el('span',null, r.ref),
-          WS.UI.el('button',{class:'icon-btn', onClick:()=>{ m.scriptures.splice(i,1); drawScr(); }},'✕'))));
-        scrBox.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'6px'}, onClick:()=>pickScripture(m,drawScr)}, '+ '+WS.t('srv_add_scr')));
+      function addBlock(){
+        const bd=WS.UI.el('div', null);
+        const mo=WS.UI.modal({ title:WS.t('blk_add'), body:bd, buttons:[{label:WS.t('close'), kind:'ghost'}] });
+        BLK_ORDER.forEach(t=> bd.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{width:'100%', marginBottom:'8px'}, onClick:()=>{ m.blocks.push(newBlock(t)); drawBlocks(); mo.close(); }}, WS.t('blk_'+t))));
       }
-      drawScr();
-
-      // медиа
-      body.appendChild(WS.UI.el('div',{class:'section-h', style:{padding:'16px 0 6px'}}, WS.t('m_media')));
-      const medBox=WS.UI.el('div', null); body.appendChild(medBox);
-      function drawMed(){ WS.UI.clear(medBox);
-        m.media.forEach((r,i)=> medBox.appendChild(WS.UI.el('div',{class:'pick-row'},
-          WS.UI.el('span',null, r.title||WS.t('m_media')),
-          WS.UI.el('button',{class:'icon-btn', onClick:()=>{ m.media.splice(i,1); drawMed(); }},'✕'))));
-        medBox.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'6px'}, onClick:()=>pickMedia(m,drawMed)}, '+ '+WS.t('srv_add_media')));
+      function blockCard(b,i){
+        const card=WS.UI.el('div',{class:'blk-card'});
+        card.appendChild(WS.UI.el('div',{class:'blk-head'},
+          WS.UI.el('div',{class:'blk-title'}, WS.t('blk_'+b.type)),
+          WS.UI.el('div',{class:'blk-tools'},
+            WS.UI.el('button',{class:'icon-btn', onClick:()=>{ if(i>0){ const t=m.blocks[i-1]; m.blocks[i-1]=m.blocks[i]; m.blocks[i]=t; drawBlocks(); } }},'↑'),
+            WS.UI.el('button',{class:'icon-btn', onClick:()=>{ if(i<m.blocks.length-1){ const t=m.blocks[i+1]; m.blocks[i+1]=m.blocks[i]; m.blocks[i]=t; drawBlocks(); } }},'↓'),
+            WS.UI.el('button',{class:'icon-btn', onClick:()=>{ m.blocks.splice(i,1); drawBlocks(); }},'✕')
+          )
+        ));
+        if(b.type!=='note'){
+          const who=WS.UI.el('input',{class:'input', placeholder:WS.t('blk_person'), value:b.person||''}); who.addEventListener('input',()=>b.person=who.value); card.appendChild(who);
+          const dl=peopleDatalist(BLK_MIN[b.type]||'other','pl'); if(dl){ who.setAttribute('list', dl.id); card.appendChild(dl); }
+        }
+        if(b.type==='songs'){
+          const box=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(box);
+          const rd=()=>{ WS.UI.clear(box); b.songs=b.songs||[]; b.songs.forEach((r,j)=> box.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,'#'+(r.number||'')+' '+(r.title||'')), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.songs.splice(j,1); rd(); }},'✕')))); box.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickSongs(b.songs, rd)}, '+ '+WS.t('srv_add_songs'))); };
+          rd();
+        } else if(b.type==='preaching'){
+          const tp=WS.UI.el('input',{class:'input', placeholder:WS.t('srv_topic_ph'), value:b.topic||'', style:{marginTop:'8px'}}); tp.addEventListener('input',()=>b.topic=tp.value); card.appendChild(tp);
+          const sb=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(sb);
+          const rs=()=>{ WS.UI.clear(sb); b.scriptures=b.scriptures||[]; b.scriptures.forEach((r,j)=> sb.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,r.ref), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.scriptures.splice(j,1); rs(); }},'✕')))); sb.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickScripture(b.scriptures, rs)}, '+ '+WS.t('srv_add_scr'))); };
+          rs();
+          const mb=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(mb);
+          const rm=()=>{ WS.UI.clear(mb); b.media=b.media||[]; b.media.forEach((r,j)=> mb.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,r.title||WS.t('m_media')), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.media.splice(j,1); rm(); }},'✕')))); mb.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickMedia(b.media, rm)}, '+ '+WS.t('srv_add_media'))); };
+          rm();
+        } else if(b.type==='media'){
+          const mb=WS.UI.el('div',{style:{marginTop:'8px'}}); card.appendChild(mb);
+          const rm=()=>{ WS.UI.clear(mb); b.media=b.media||[]; b.media.forEach((r,j)=> mb.appendChild(WS.UI.el('div',{class:'pick-row'}, WS.UI.el('span',null,r.title||WS.t('m_media')), WS.UI.el('button',{class:'icon-btn', onClick:()=>{ b.media.splice(j,1); rm(); }},'✕')))); mb.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginTop:'4px'}, onClick:()=>pickMedia(b.media, rm)}, '+ '+WS.t('srv_add_media'))); };
+          rm();
+        } else if(b.type==='note'){
+          const ta=WS.UI.el('textarea',{class:'input', placeholder:WS.t('blk_note_ph'), style:{minHeight:'70px'}}); ta.value=b.text||''; ta.addEventListener('input',()=>b.text=ta.value); card.appendChild(ta);
+        }
+        return card;
       }
-      drawMed();
+      drawBlocks();
 
       body.appendChild(WS.UI.el('div',{class:'spacer'}));
       body.appendChild(WS.UI.el('button',{class:'btn', style:{marginTop:'12px'}, onClick:()=>save(m, !existing)}, WS.t('save')));
@@ -236,15 +265,15 @@
       catch(e){ WS.UI.toast(WS.t('error_prefix')+(e.message||''),'error'); }
     }
 
-    // ── Пикеры ──
-    function pickSongs(m, done){
+    // ── Пикеры (мутируют переданный массив) ──
+    function pickSongs(arr, done){
       const all=[].concat((WS.Data.items('songs')||[]).map(s=>({s,coll:'songs'})), (WS.Data.items('psalms')||[]).map(s=>({s,coll:'psalms'})));
       const b=WS.UI.el('div', null);
       const search=WS.UI.el('input',{class:'input', type:'search', placeholder:WS.t('search_ph'), style:{marginBottom:'10px'}}); b.appendChild(search);
       const listW=WS.UI.el('div', null); b.appendChild(listW);
       const rows=all.map(({s,coll})=>{
-        const has=m.worship_songs.some(r=>r.id===s.id && r.coll===coll);
-        const row=WS.UI.el('div',{class:'row', onClick:()=>{ const i=m.worship_songs.findIndex(r=>r.id===s.id&&r.coll===coll); if(i>=0){ m.worship_songs.splice(i,1); row.classList.remove('sel'); } else { m.worship_songs.push({coll,id:s.id,number:s.number,title:s.title}); row.classList.add('sel'); } }},
+        const has=arr.some(r=>r.id===s.id && r.coll===coll);
+        const row=WS.UI.el('div',{class:'row', onClick:()=>{ const i=arr.findIndex(r=>r.id===s.id&&r.coll===coll); if(i>=0){ arr.splice(i,1); row.classList.remove('sel'); } else { arr.push({coll,id:s.id,number:s.number,title:s.title}); row.classList.add('sel'); } }},
           WS.UI.el('div',{class:'num'}, '#'+(s.number||'')),
           WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, (coll==='psalms'?WS.t('t_psalms'):WS.t('t_songs'))+' · '+(s.title||'')))
         );
@@ -255,30 +284,28 @@
       WS.UI.modal({ title:WS.t('srv_add_songs'), body:b, buttons:[{label:WS.t('done'), onClick:done}] });
     }
 
-    function pickScripture(m, done){
+    function pickScripture(arr, done){
       const books=WS.Data.items('bible')||[];
       const b=WS.UI.el('div', null);
       const sel=WS.UI.el('select',{class:'input'});
       books.forEach((bk,i)=>{ const o=document.createElement('option'); o.value=String(i); o.textContent=bk.ua+' / '+bk.en; sel.appendChild(o); });
-      b.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('srv_book')));
-      b.appendChild(sel);
-      b.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'8px'}},
-        (function(){ const ch=WS.UI.el('input',{class:'input', type:'number', min:'1', placeholder:WS.t('srv_ch')}); b._ch=ch; return ch; })(),
-        (function(){ const v=WS.UI.el('input',{class:'input', type:'number', min:'1', placeholder:WS.t('srv_v')}); b._v=v; return v; })()
-      ));
+      b.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('srv_book'))); b.appendChild(sel);
+      const ch=WS.UI.el('input',{class:'input', type:'number', min:'1', placeholder:WS.t('srv_ch')});
+      const v=WS.UI.el('input',{class:'input', type:'number', min:'1', placeholder:WS.t('srv_v')});
+      b.appendChild(WS.UI.el('div',{class:'btn-row', style:{marginTop:'8px'}}, ch, v));
       WS.UI.modal({ title:WS.t('srv_add_scr'), body:b, buttons:[
-        { label:WS.t('add'), onClick:()=>{ const i=parseInt(sel.value,10); const bk=books[i]; const c=parseInt(b._ch.value,10), v=parseInt(b._v.value,10); if(!bk||!c||!v) return; m.scriptures.push({ bi:i+1, book_ua:bk.ua, book_en:bk.en, ch:c, v:v, ref:bk.ua+' '+c+':'+v }); done(); } },
+        { label:WS.t('add'), onClick:()=>{ const i=parseInt(sel.value,10); const bk=books[i]; const c=parseInt(ch.value,10), vv=parseInt(v.value,10); if(!bk||!c||!vv) return true; arr.push({ bi:i+1, book_ua:bk.ua, book_en:bk.en, ch:c, v:vv, ref:bk.ua+' '+c+':'+vv }); done(); ch.value=''; v.value=''; return true; } },
         { label:WS.t('close'), kind:'ghost' }
       ]});
     }
 
-    function pickMedia(m, done){
+    function pickMedia(arr, done){
       const items=WS.Data.items('media')||[];
       const b=WS.UI.el('div', null);
       if(!items.length) b.appendChild(WS.UI.el('div',{class:'empty'}, WS.t('no_media')));
       items.forEach(it=>{
-        const has=m.media.some(r=>r.id===it.id);
-        const row=WS.UI.el('div',{class:'row', onClick:()=>{ const i=m.media.findIndex(r=>r.id===it.id); if(i>=0){ m.media.splice(i,1); row.classList.remove('sel'); } else { m.media.push({id:it.id,title:it.title,type:it.type,drive_id:it.drive_id}); row.classList.add('sel'); } }},
+        const has=arr.some(r=>r.id===it.id);
+        const row=WS.UI.el('div',{class:'row', onClick:()=>{ const i=arr.findIndex(r=>r.id===it.id); if(i>=0){ arr.splice(i,1); row.classList.remove('sel'); } else { arr.push({id:it.id,title:it.title,type:it.type,drive_id:it.drive_id}); row.classList.add('sel'); } }},
           WS.UI.el('div',{class:'num'}, ({video:'▶',image:'▣',presentation:'▤'}[it.type]||'•')),
           WS.UI.el('div',{class:'main'}, WS.UI.el('div',{class:'ttl'}, it.title||WS.t('untitled')))
         );
@@ -291,6 +318,8 @@
 
   // активное служіння (для оператора)
   WS.Services = {
-    active(){ return (WS.Data.items('services')||[]).find(s=>s.active) || null; }
+    active(){ return (WS.Data.items('services')||[]).find(s=>s.active) || null; },
+    migrate: migrate,
+    placeLabel: placeLabel
   };
 })();

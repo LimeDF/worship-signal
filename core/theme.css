@@ -318,3 +318,9 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .person-av img{ width:100%; height:100%; object-fit:cover; }
 .person-name{ font-weight:bold; font-size:15px; }
 .person-min{ font-size:12px; color:var(--bone-dim); margin-top:3px; }
+
+/* блоки служіння в редакторі */
+.blk-card{ background:var(--kombu-2); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; }
+.blk-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.blk-title{ font-weight:bold; color:var(--tan); }
+.blk-tools{ display:flex; gap:4px; }

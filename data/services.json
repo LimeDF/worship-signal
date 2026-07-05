@@ -1,20 +1,4 @@
 {
   "schema_version": 1,
-  "items": [
-    {
-      "id": "imr77ecddx9ra",
-      "date": "2026-07-05",
-      "time": "10:00",
-      "type": "service",
-      "place": "own",
-      "place_custom": "",
-      "worship_leader": "",
-      "worship_songs": [],
-      "preacher": "",
-      "topic": "",
-      "scriptures": [],
-      "media": [],
-      "active": true
-    }
-  ]
+  "items": []
 }

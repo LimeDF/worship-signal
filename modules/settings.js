@@ -98,6 +98,17 @@
       }}, WS.t('restore_latest')));
     }
 
+    // Пастор (без Lime): только бэкап на Drive
+    if(WS.Auth.canPastor() && !WS.Auth.canAdmin()){
+      body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('drive_section')));
+      body.appendChild(WS.UI.el('button',{class:'btn', onClick:async()=>{
+        if(!WS.Drive.isConfigured()){ WS.UI.toast(WS.t('drive_need_id'),'error'); return; }
+        WS.UI.toast(WS.t('backup_running'));
+        try { await WS.Drive.backup(); WS.UI.toast(WS.t('backup_done')); }
+        catch(e){ WS.UI.toast(WS.t('drive_error', e.message||''),'error'); }
+      }}, WS.t('backup_now')));
+    }
+
     // выход
     body.appendChild(WS.UI.el('div',{class:'spacer'}));
     body.appendChild(WS.UI.el('div',{class:'spacer'}));
