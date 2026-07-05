@@ -10,25 +10,18 @@
       "place_custom": "",
       "blocks": [
         {
-          "type": "media",
+          "type": "prayer",
           "people": [
-            "Angelina  Filonenko"
+            "Oleg  Makosiy"
           ],
-          "media": []
+          "note": ""
         },
         {
           "type": "songs",
           "people": [
             "Taras Logvis"
           ],
-          "songs": [
-            {
-              "coll": "songs",
-              "id": "s_4",
-              "number": 4,
-              "title": "Вже надходить той день (What a Day That Will Be)"
-            }
-          ]
+          "songs": []
         },
         {
           "type": "prayer",
@@ -38,10 +31,20 @@
           "note": ""
         },
         {
-          "type": "media",
+          "type": "songs",
           "people": [
-            "Angelina  Filonenko"
+            "Taras Logvis"
           ],
+          "songs": []
+        },
+        {
+          "type": "preaching",
+          "people": [
+            "Mykola Ilchishun"
+          ],
+          "translator": "Oleg  Makosiy",
+          "topic": "",
+          "scriptures": [],
           "media": []
         }
       ],
