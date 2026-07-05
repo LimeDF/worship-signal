@@ -3,7 +3,15 @@
   "items": [
     {
       "id": "app",
-      "drive_client_id": ""
+      "drive_client_id": "",
+      "service": {
+        "mode": "weekly",
+        "time": "10:00",
+        "weekday": 0,
+        "date": "",
+        "lead": 15
+      },
+      "splash_drive_id": "1b2RVkS3V6msAlnhmPJdZXXb-cMbSQJo3"
     }
   ]
 }
