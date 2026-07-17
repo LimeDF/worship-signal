@@ -203,7 +203,7 @@
 
     content.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{margin:'12px 0'}, onClick:()=>addItem(drawItems)}, WS.t('add_element')));
     content.appendChild(WS.UI.el('div',{class:'btn-row'},
-      WS.UI.el('button',{class:'btn', onClick:save}, WS.t('save')),
+      WS.UI.saveBtn(WS.t('save'), save),
       WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>WS.App.show('programs', {view: current._saved ? 'detail' : 'list'})}, WS.t('cancel'))
     ));
     if(current._saved && WS.Auth.canPastor()) content.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del_program')));
@@ -215,7 +215,6 @@
       const items = (WS.Data.items('programs') || []).slice();
       const idx = items.findIndex(x => x.id === current.id);
       if(idx >= 0) items[idx] = clean; else items.push(clean);
-      WS.UI.toast(WS.t('saving'));
       try { await WS.Data.save('programs', items, (idx>=0?'Edit ':'Add ') + 'program ' + current.title); current._saved = true; WS.UI.toast(WS.t('saved')); WS.App.show('programs', {view:'detail'}); }
       catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message || ''),'error'); }
     }

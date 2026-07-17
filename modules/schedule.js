@@ -68,7 +68,7 @@
     }
 
     wrap.appendChild(WS.UI.el('div',{class:'spacer'}));
-    wrap.appendChild(WS.UI.el('button',{class:'btn', style:{marginTop:'12px'}, onClick:save}, WS.t('save')));
+    wrap.appendChild(WS.UI.saveBtn(WS.t('save'), save, 'btn'));
 
     function parseId(v){ v=String(v||'').trim(); const m=v.match(/\/d\/([-\w]{20,})/)||v.match(/[?&]id=([-\w]{20,})/); if(m) return m[1]; if(/^[-\w]{20,}$/.test(v)) return v; return ''; }
 
@@ -78,7 +78,6 @@
       if(s.mode==='once' && !s.date){ WS.UI.toast(WS.t('sch_need_date'),'error'); return; }
       const idFromLink = parseId(linkInp.value);
       const patch = { service: { mode:s.mode, time:s.time, weekday:s.weekday, date:s.date, lead:s.lead }, splash_drive_id: idFromLink || splashId || '' };
-      WS.UI.toast(WS.t('saving'));
       try { await WS.Cfg.save(patch, 'Update schedule'); WS.UI.toast(WS.t('saved')); }
       catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message||''),'error'); }
     }

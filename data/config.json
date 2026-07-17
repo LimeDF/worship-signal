@@ -1,17 +1,6 @@
 {
   "schema_version": 1,
   "items": [
-    {
-      "id": "app",
-      "drive_client_id": "",
-      "service": {
-        "mode": "weekly",
-        "time": "17:00",
-        "weekday": 0,
-        "date": "",
-        "lead": 15
-      },
-      "splash_drive_id": "11wpeZUYU5LKC4HrurIayCrseJ8UydnZ4"
-    }
+    { "id": "app", "drive_client_id": "" }
   ]
 }

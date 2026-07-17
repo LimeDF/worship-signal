@@ -105,11 +105,18 @@
     if(sha) body.sha = sha;
 
     const url = `${GH_API}/repos/${cfg.owner}/${cfg.repo}/contents/${filePath(name)}`;
-    const res = await fetch(url, {
+    const doPut = () => fetch(url, {
       method:'PUT',
       headers:{ Authorization:'token '+tok, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
       body: JSON.stringify(body)
     });
+    let res = await doPut();
+    if(res.status === 409 || res.status === 422){
+      // устаревший sha (кто-то сохранил параллельно) — берём свежий и повторяем один раз
+      try { sha = (await fetchApi(name)).sha; } catch(e){ sha = null; }
+      if(sha) body.sha = sha; else delete body.sha;
+      res = await doPut();
+    }
     if(!res.ok){ const t = await res.text(); throw new Error('PUT ' + res.status + ': ' + t.slice(0,120)); }
 
     WS.ls.set(cacheKey(name), full);          // обновляем кэш

@@ -210,7 +210,7 @@
 
       listWrap.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'14px'}, onClick:()=>{ model.blocks.push({ type:'verse', text:'', translation:'' }); drawBlocks(); }}, WS.t('add_block')));
       listWrap.appendChild(WS.UI.el('div',{class:'btn-row'},
-        WS.UI.el('button',{class:'btn', onClick:save}, WS.t('save')),
+        WS.UI.saveBtn(WS.t('save'), save),
         WS.UI.el('button',{class:'btn btn-ghost', onClick:loadList}, WS.t('cancel'))
       ));
       if(!isNew && WS.Auth.canEdit()) listWrap.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del')));
@@ -221,7 +221,6 @@
         const items = WS.Data.items(tab).slice();
         const idx = items.findIndex(x => x.id === model.id);
         if(idx >= 0) items[idx] = model; else items.push(model);
-        WS.UI.toast(WS.t('saving'));
         try { await WS.Data.save(tab, items, (idx>=0 ? 'Edit ' : 'Add ') + model.number + '. ' + model.title); WS.UI.toast(WS.t('saved')); loadList(); }
         catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message || ''),'error'); }
       }
@@ -288,7 +287,36 @@
     return out;
   }
 
-  // ── Печать / PDF (через системный диалог «Зберегти як PDF», чёрным по белому) ──
+  // Экспорт в PDF/печать: открываем отдельную вкладку с готовой страницей (надёжно на всех, вкл. iOS Safari)
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function songToHtml(item, withTr){
+    function page(title, pick, brk){
+      let blocks='';
+      (item.blocks||[]).forEach(b => { const t=pick(b); if(!(t && t.trim())) return; blocks += '<div class="blk'+(b.type==='chorus'?' chorus':'')+'">'+esc(t)+'</div>'; });
+      if(!blocks) return '';
+      return '<section class="pg'+(brk?' brk':'')+'"><h1>'+esc(title)+'</h1>'+blocks+'</section>';
+    }
+    let bodyHtml = page('#'+(item.number!=null?item.number:'')+'  '+(item.title||''), b=>b.text, false);
+    if(withTr) bodyHtml += page((item.title||'')+' — '+WS.t('translation_word'), b=>b.translation, true);
+    if(!bodyHtml) bodyHtml = '<section class="pg"><h1>'+esc(item.title||'')+'</h1></section>';
+    return '<!doctype html><html><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>'+esc(item.title||'')+'</title><style>'
+      + 'html,body{background:#fff;color:#000;margin:0;font-family:Georgia,serif;-webkit-print-color-adjust:exact;}'
+      + '.wrap{max-width:720px;margin:0 auto;padding:22px;}'
+      + '.pg{padding:0 0 22px;}.pg.brk{page-break-before:always;}'
+      + 'h1{font-size:22pt;font-weight:bold;text-align:center;margin:0 0 16pt;}'
+      + '.blk{font-size:14pt;line-height:1.55;white-space:pre-line;margin:0 0 12pt;page-break-inside:avoid;}'
+      + '.blk.chorus{font-style:italic;margin-left:1.2em;}'
+      + '.bar{position:sticky;top:0;background:#efe9df;border-bottom:1px solid #ccc;padding:10px;text-align:center;}'
+      + '.bar button{font-size:16px;font-weight:bold;padding:11px 20px;border:none;border-radius:8px;background:#4a7a3a;color:#fff;}'
+      + '@media print{.bar{display:none;}.wrap{max-width:none;padding:0;}@page{margin:2cm;}}'
+      + '</style></head><body>'
+      + '<div class="bar"><button onclick="window.print()">🖨 '+esc(WS.t('print_pdf'))+'</button></div>'
+      + '<div class="wrap">'+bodyHtml+'</div>'
+      + '<scr'+'ipt>setTimeout(function(){try{window.focus();window.print();}catch(e){}},500);</scr'+'ipt>'
+      + '</body></html>';
+  }
   function printChooser(item){
     const hasTr = (item.blocks || []).some(b => b.translation && b.translation.trim());
     if(!hasTr){ printSong(item, false); return; }
@@ -298,29 +326,17 @@
       { label: WS.t('cancel'), kind:'ghost' }
     ]});
   }
-  function printPage(title, pick, item, brk){
-    const sec = document.createElement('section'); sec.className = 'print-page' + (brk ? ' brk' : '');
-    const h = document.createElement('h1'); h.className = 'print-title'; h.textContent = title; sec.appendChild(h);
-    let any = false;
-    (item.blocks || []).forEach(b => {
-      const txt = pick(b); if(!(txt && txt.trim())) return; any = true;
-      const d = document.createElement('div'); d.className = 'print-block' + (b.type === 'chorus' ? ' chorus' : '');
-      d.textContent = txt; sec.appendChild(d);
-    });
-    return any ? sec : null;
-  }
   function printSong(item, withTr){
-    document.querySelectorAll('.print-only').forEach(n => n.remove());
-    const doc = document.createElement('div'); doc.className = 'print-only';
-    const orig = printPage('#' + (item.number != null ? item.number : '') + '  ' + (item.title || ''), b => b.text, item, false);
-    if(orig) doc.appendChild(orig);
-    if(withTr){
-      const tr = printPage((item.title || '') + ' — ' + WS.t('translation_word'), b => b.translation, item, true);
-      if(tr) doc.appendChild(tr);
-    }
-    document.body.appendChild(doc);
-    const cleanup = () => { try { doc.remove(); } catch(e){} window.removeEventListener('afterprint', cleanup); };
-    window.addEventListener('afterprint', cleanup);
-    setTimeout(() => { try { window.print(); } catch(e){ cleanup(); } }, 80);
+    const html = songToHtml(item, withTr);
+    let w = null;
+    try { w = window.open('', '_blank'); } catch(e){}
+    if(w && w.document){ w.document.open(); w.document.write(html); w.document.close(); return; }
+    // если всплывающее окно заблокировано — открываем через Blob-ссылку
+    try {
+      const url = URL.createObjectURL(new Blob([html], { type:'text/html' }));
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch(e){} }, 60000);
+    } catch(e){ WS.UI.toast(WS.t('print_pdf') + ' —', 'error'); }
   }
 })();

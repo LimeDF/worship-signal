@@ -229,7 +229,7 @@
       const m = existing ? migrate(JSON.parse(JSON.stringify(existing))) : { id:WS.Data.newId(), date:dateStr||todayStr(), time:'10:00', type:'service', place:'own', place_custom:'', blocks:[], active:false };
       if(!m.type) m.type='service'; if(!Array.isArray(m.blocks)) m.blocks=[];
       WS.UI.clear(body);
-      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:renderCal}, '← '+WS.t('back')));
+      body.appendChild(WS.UI.el('button',{class:'btn btn-ghost', style:{marginBottom:'12px'}, onClick:renderCal}, WS.t('back')));
 
       body.appendChild(WS.UI.el('div',{class:'field-label'}, WS.t('sch_date')));
       const dt=WS.UI.el('input',{class:'input', type:'date', value:m.date}); dt.addEventListener('change',()=>m.date=dt.value); body.appendChild(dt);
@@ -309,16 +309,17 @@
       drawBlocks();
 
       body.appendChild(WS.UI.el('div',{class:'spacer'}));
-      body.appendChild(WS.UI.el('button',{class:'btn', style:{marginTop:'12px'}, onClick:()=>save(m, !existing)}, WS.t('save')));
+      const saveBtn = WS.UI.el('button',{class:'btn', style:{marginTop:'12px'}, onClick:()=>save(m, !existing, saveBtn)}, WS.t('save'));
+      body.appendChild(saveBtn);
     }
 
-    async function save(m, isNew){
+    async function save(m, isNew, btn){
+      if(btn){ if(btn.disabled) return; btn.disabled = true; btn.textContent = WS.t('saving'); }
       const items=(WS.Data.items('services')||[]).slice();
       const idx=items.findIndex(x=>x.id===m.id);
       if(idx>=0) items[idx]=m; else items.push(m);
-      WS.UI.toast(WS.t('saving'));
       try{ await WS.Data.save('services', items, (isNew?'Add':'Edit')+' service'); WS.UI.toast(WS.t('saved')); renderCal(); }
-      catch(e){ WS.UI.toast(WS.t('error_prefix')+(e.message||''),'error'); }
+      catch(e){ WS.UI.toast(WS.t('error_prefix')+(e.message||''),'error'); if(btn){ btn.disabled=false; btn.textContent=WS.t('save'); } }
     }
 
     // ── Пикеры (мутируют переданный массив) ──

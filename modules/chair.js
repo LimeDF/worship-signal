@@ -126,7 +126,7 @@
 
     wrap.appendChild(WS.UI.el('div',{class:'spacer'}));
     wrap.appendChild(WS.UI.el('div',{class:'btn-row'},
-      WS.UI.el('button',{class:'btn', onClick:save}, WS.t('save')),
+      WS.UI.saveBtn(WS.t('save'), save),
       WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>renderItemList(wrap, coll)}, WS.t('cancel'))
     ));
     if(!isNew && WS.Auth.canEdit()) wrap.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del')));
@@ -139,7 +139,6 @@
       let items = activeItems(coll).slice();
       const idx = items.findIndex(x => x.id === model.id);
       if(idx >= 0) items[idx] = model; else items.push(model);
-      WS.UI.toast(WS.t('saving'));
       try { await WS.Data.save(coll, items, (idx>=0?'Edit ':'Add ') + (model.title || 'text')); WS.UI.toast(WS.t('saved')); renderItemList(wrap, coll); }
       catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message || ''),'error'); }
     }
@@ -230,7 +229,7 @@
 
     wrap.appendChild(WS.UI.el('div',{class:'spacer'}));
     wrap.appendChild(WS.UI.el('div',{class:'btn-row'},
-      WS.UI.el('button',{class:'btn', onClick:save}, WS.t('save')),
+      WS.UI.saveBtn(WS.t('save'), save),
       WS.UI.el('button',{class:'btn btn-ghost', onClick:()=>renderMedia(wrap)}, WS.t('cancel'))
     ));
     if(!isNew && WS.Auth.canEdit()) wrap.appendChild(WS.UI.el('button',{class:'btn btn-danger', style:{marginTop:'10px'}, onClick:remove}, WS.t('del')));
@@ -243,7 +242,6 @@
       const items = WS.Data.items('media').slice();
       const idx = items.findIndex(x => x.id === model.id);
       if(idx >= 0) items[idx] = model; else items.push(model);
-      WS.UI.toast(WS.t('saving'));
       try { await WS.Data.save('media', items, (idx>=0?'Edit ':'Add ') + 'media ' + model.title); WS.UI.toast(WS.t('saved')); renderMedia(wrap); }
       catch(e){ WS.UI.toast(WS.t('error_prefix') + (e.message || ''),'error'); }
     }
@@ -333,7 +331,7 @@
       let idx = arr.findIndex(x => x.verse === startVerse); if(idx < 0) idx = 0;
       WS.UI.clear(listWrap);
       const actions = WS.UI.el('div',{class:'rd-actions'},
-        WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'1 1 0'}, onClick:()=>showVerses(b, c)}, '← ' + WS.t('back')),
+        WS.UI.el('button',{class:'btn btn-ghost', style:{flex:'1 1 0'}, onClick:()=>showVerses(b, c)}, WS.t('back')),
         WS.UI.el('button',{class:'btn', style:{flex:'1 1 0'}, onClick:()=>emitOne(b, c, arr[idx].verse, results, 'screen')}, WS.t('bible_to_screen')),
         WS.UI.el('button',{class:'btn btn-tan', style:{flex:'1 1 0'}, onClick:()=>emitOne(b, c, arr[idx].verse, results, 'operator')}, WS.t('bible_to_operator'))
       );

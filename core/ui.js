@@ -29,6 +29,21 @@
   };
 
   U.clear = function(node){ while(node && node.firstChild) node.removeChild(node.firstChild); };
+
+  // Кнопка сохранения: блокируется и показывает прогресс, чтобы не жали много раз.
+  // run — async; сам показывает ошибки. При успехе экран обычно перерисуется (кнопка исчезнет).
+  U.saveBtn = function(label, run, cls){
+    const btn = U.el('button', { class: cls || 'btn' });
+    btn.textContent = label;
+    btn.addEventListener('click', async () => {
+      if(btn.disabled) return;
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = (WS.t ? WS.t('saving') : 'Saving…');
+      try { await run(); } catch(e){ /* run shows its own toast */ }
+      finally { if(btn.isConnected){ btn.disabled = false; btn.textContent = orig; } }
+    });
+    return btn;
+  };
   U.esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); };
 
   // тост

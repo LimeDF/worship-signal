@@ -231,17 +231,7 @@ textarea.input{ border:1px solid var(--line); border-radius:var(--radius-sm); re
 .banner{ background:var(--tan); color:#2a2113; text-align:center; padding:8px; font-size:14px; }
 
 /* ── Печать песни в PDF (белая бумага) ── */
-.print-only{ display:none; }
-@media print {
-  body > *:not(.print-only){ display:none !important; }
-  html, body{ background:#fff !important; }
-  .print-only{ display:block !important; color:#000; background:#fff; font-family:Georgia, serif; }
-  .print-title{ font-size:22pt; font-weight:bold; text-align:center; margin:0 0 16pt; }
-  .print-block{ font-size:14pt; line-height:1.55; white-space:pre-line; margin:0 0 12pt; page-break-inside:avoid; }
-  .print-block.chorus{ font-style:italic; margin-left:1.2em; }
-  .print-page.brk{ page-break-before:always; }
-  @page { margin:2cm; }
-}
+/* печать вынесена в отдельную вкладку (см. hymns.js) */
 
 /* Сцена — выезжающая панель (вариант 2) */
 .stage-fab{ position:fixed; right:14px; bottom:14px; z-index:40; padding:12px 18px; border-radius:24px; background:var(--moss); color:#1c2114; font-weight:bold; font-size:15px; border:none; box-shadow:0 3px 12px rgba(0,0,0,0.45); cursor:pointer; }
