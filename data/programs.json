@@ -32,6 +32,19 @@
           "title": "Дивна благодать"
         }
       ]
+    },
+    {
+      "id": "imrpig33qal06",
+      "title": "Friday",
+      "date": "2026-07-17",
+      "items": [
+        {
+          "type": "psalm",
+          "ref_id": "p_6",
+          "number": 5,
+          "title": "Боже почуй мої моління"
+        }
+      ]
     }
   ]
 }
