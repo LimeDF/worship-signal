@@ -1,4 +1,79 @@
 {
   "schema_version": 1,
-  "items": []
+  "items": [
+    {
+      "id": "imr7vvpzp9yg0",
+      "date": "2026-07-05",
+      "time": "10:00",
+      "type": "service",
+      "place": "own",
+      "place_custom": "",
+      "blocks": [
+        {
+          "type": "prayer",
+          "people": [
+            "Oleg  Makosiy"
+          ],
+          "note": ""
+        },
+        {
+          "type": "songs",
+          "people": [
+            "Taras Logvis"
+          ],
+          "songs": []
+        },
+        {
+          "type": "prayer",
+          "people": [
+            "Oleg  Makosiy"
+          ],
+          "note": ""
+        },
+        {
+          "type": "songs",
+          "people": [
+            "Taras Logvis"
+          ],
+          "songs": []
+        },
+        {
+          "type": "preaching",
+          "people": [
+            "Mykola Ilchishun"
+          ],
+          "translator": "Oleg  Makosiy",
+          "topic": "",
+          "scriptures": [],
+          "media": []
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "imr878ksemsbd",
+      "date": "2026-07-05",
+      "time": "17:00",
+      "type": "prayer",
+      "place": "own",
+      "place_custom": "",
+      "blocks": [
+        {
+          "type": "prayer",
+          "people": [
+            "Yroslaw  Karnauch"
+          ],
+          "note": ""
+        },
+        {
+          "type": "songs",
+          "people": [
+            "Taras Logvis"
+          ],
+          "songs": []
+        }
+      ],
+      "active": false
+    }
+  ]
 }
