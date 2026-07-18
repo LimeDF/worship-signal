@@ -6,6 +6,12 @@
       "title": "Пример видео (замените drive_id)",
       "type": "video",
       "drive_id": ""
+    },
+    {
+      "id": "imrplpujg1wfa",
+      "title": "Screenshot_20260708-161757.png",
+      "type": "image",
+      "drive_id": "1_eBKr2qLpFG0-aB2feDbgwQbcoE9xB6M"
     }
   ]
 }
